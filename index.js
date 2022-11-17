@@ -9,7 +9,7 @@ const { remindRemindersFunction } = require('./helpers/reminderHelper');
 //var fileUpload = require('express-fileupload');
 
 
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 const cors = require('cors');

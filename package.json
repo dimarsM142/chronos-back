@@ -4,7 +4,7 @@
   "description": "Some service for organizing your meetings",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "keywords": [
     "chronos"
