@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {secret} = require('../config');
+const {secret} = require('../config.js');
+const authHelper = require('../helpers/authHelper.js');
 const database = require('../db');
 const { userValidation,
         loginValidation,
@@ -121,18 +122,18 @@ const refreshTokens = (req, res) => {
             return;
         }
     }
-    database.query('SELECT EXISTS(SELECT token_id FROM tokens WHERE token_id = ?)', payload.id, function(err, result) {
+    database.query('SELECT EXISTS(SELECT id FROM tokens WHERE id = ?)', payload.id, function(err, result) {
         if(err) {
             return res.status(400).json( {comment: 'Not found'});
         }
         else {
-            if(result[0][`EXISTS(SELECT token_id FROM tokens WHERE token_id = '${payload.id}')`] == 0) {
+            if(result[0][`EXISTS(SELECT id FROM tokens WHERE id = '${payload.id}')`] == 0) {
                 res.status(400).json( {comment: 'Invalid token!'});
             }
             else {
                 database.query('SELECT tokens.user_id, users.login FROM tokens ' +
-                'LEFT OUTER JOIN users ON tokens.user_id = users.user_id ' +
-                'WHERE tokens.token_id=?', payload.id, (err, result) => {
+                'LEFT OUTER JOIN users ON tokens.user_id = users.id ' +
+                'WHERE tokens.id=?', payload.id, (err, result) => {
                     if (err) {
                         return res.status(400).json( {comment: 'Not found'});
                     }
