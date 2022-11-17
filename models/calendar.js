@@ -8,7 +8,7 @@ module.exports = class Calendar {
         this.description = description;
     }
     getAllOwnCurrentUserCalendars(res, userId) {
-        database.query('SELECT calendars.title, calendars.description FROM calendars WHERE user_id=?', +userId, (err, result) => {
+        database.query('SELECT calendars.title, calendars.description, calendars.id FROM calendars WHERE user_id=?', +userId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
@@ -18,7 +18,7 @@ module.exports = class Calendar {
         });
     }
     getAllCurrentUserSubsToCalendars(res, userId) {
-        database.query('SELECT calendars.title, calendars.description FROM calendars ' +
+        database.query('SELECT calendars.title, calendars.description, calendars.id FROM calendars ' +
             'LEFT OUTER JOIN users_calendars ON calendars.id = users_calendars.calendar_id ' +
             'LEFT OUTER JOIN users ON users_calendars.user_id = users.id ' +
             'WHERE users.id=?', userId, (err, result) => {
