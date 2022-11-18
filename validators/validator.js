@@ -12,6 +12,16 @@ function userValidation(data) {
     return schema.validate(data);
 }
 
+function changeValidation(data) {
+    const schema = Joi.object({
+        login: Joi.string().min(4).max(29).required(),
+        fname: Joi.string().min(8).max(64).required(),
+        email: Joi.string().min(4).max(255).email().required()
+    });
+
+    return schema.validate(data);
+}
+
 function loginValidation(data) {
     const schema = Joi.object({
         login: Joi.string().min(1).max(29).required(),
@@ -100,6 +110,7 @@ function eventChangeValidation(data) {
 
 module.exports = {
     userValidation,
+    changeValidation,
     loginValidation,
     pswResValidation,
     confPswResValidation,
