@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {secret} = require('../config.js');
-const authHelper = require('../helpers/authHelper.js');
+const {secret} = require('../config');
 const database = require('../db');
+const authHelper = require('../helpers/authHelper');
 const { userValidation,
         loginValidation,
         pswResValidation,
@@ -132,7 +132,7 @@ const refreshTokens = (req, res) => {
             }
             else {
                 database.query('SELECT tokens.user_id, users.login FROM tokens ' +
-                'LEFT OUTER JOIN users ON tokens.user_id = users.id ' +
+                'LEFT OUTER JOIN users ON tokens.user_id = users.user_id ' +
                 'WHERE tokens.id=?', payload.id, (err, result) => {
                     if (err) {
                         return res.status(400).json( {comment: 'Not found'});

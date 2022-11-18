@@ -12,6 +12,16 @@ module.exports = class User {
         this.full_name = full_name;
         this.email = email;
     }
+    getInfoCurrentUser(res, userId) {
+        database.query('SELECT * FROM users WHERE id = ?', +userId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                return res.status(200).json(result);
+            }
+        });
+    }
     logIn(login, res) {
         let temp = this.password;
         database.query('SELECT EXISTS(SELECT login FROM users WHERE login = ?)', login, function(err, result) {
@@ -40,16 +50,32 @@ module.exports = class User {
             }
         });
     }
+    deleteAccountCurrentUser(res, userId) {
+        database.query('DELETE FROM users WHERE id = ?', +userId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                database.query('DELETE FROM tokens WHERE user_id = ?', +userId, (err, result) => {
+                    if (err) {
+                        return res.status(400).json( {comment: 'Not found'});
+                    }
+                    else {
+                        return res.status(200).json({message: "Your account successfully deleted!"});
+                    }
+                });
+            }
+        })
+    }
     logOut(req, res) {
         const token = req.get('Authorization')
         const payload = jwt.verify(token, secret);
-        database.query('DELETE FROM tokens WHERE user_id = ?', +payload.userId, function (err, result) {
+        database.query('DELETE FROM tokens WHERE user_id = ?', +payload.userId, (err, result) => {
             if (err) {
                 return res.status(400).json( {comment: 'Not found'});
             }
             else {
-                res.status(200).json({message: "Logout successfully!"})
-                return;
+                return res.status(200).json({message: "Logout successfully!"});
             }
         });
     }
@@ -101,6 +127,59 @@ module.exports = class User {
             }
         });
     }
+    uploadCurrentUserAvatar(res, userId) {
+        const user = {
+            picture: `http://192.168.20.251:3001/img/user${userId}.jpg`
+        }
+        database.query('UPDATE users SET ? WHERE id = ?', [user, +userId], function(err, result) {
+            if (err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                req.files.photo.mv(`img/user${userId}.jpg`);
+                return res.status(200).json( {path: `http://192.168.20.251:3001/img/user${userId}.jpg`} );
+            }
+        });
+    }
+    resave(res, userId) {
+        let user = {
+            login: this.login,
+            password: (this.password !== undefined)?(bcrypt.hashSync(this.password, bcrypt.genSaltSync(+process.env.SALT_ROUNDS))):(undefined),
+            full_name: this.full_name,
+            email: this.email
+        };
+
+        (user.login === undefined) && (delete user.login);
+        (user.password === undefined) && (delete user.password);
+        (user.full_name === undefined) && (delete user.full_name);
+        (user.email === undefined) && (delete user.email);
+
+        database.query('UPDATE users SET ? WHERE id = ?', [user, userId], function(err, result) {
+            if (err) {
+                let key;
+                if(err.sqlMessage.includes('login')) {
+                    key = 'login';
+                }
+                else if(err.sqlMessage.includes('full_name')) {
+                    key = 'full_name';
+                }
+                else if(err.sqlMessage.includes('email')) {
+                    key = 'email';
+                }
+                return res.status(400).json( {comment: 'Bad request', code: err.code, key: key});
+            }
+            else {
+                database.query('SELECT * FROM users WHERE id=?', userId, (err, result) => {
+                    if (err) {
+                        return res.status(400).json( {comment: 'Not found'});
+                    }
+                    else {
+                        return res.status(201).json(result);
+                    }
+                });
+            }
+        });
+    }
     passwordReset(login, res, token) {
         database.query('SELECT EXISTS(SELECT login FROM users WHERE login = ?)', login, function(err, result) {
             if(err) {
@@ -143,8 +222,6 @@ module.exports = class User {
                         }
                         else {
                             user.password = bcrypt.hashSync(newpsw, bcrypt.genSaltSync(+process.env.SALT_ROUNDS));
-                            user.full_name = result[0]['full_name'];
-                            user.email = result[0]['email'];
                             database.query('UPDATE users SET ? WHERE login = ?', [user, user.login], function(err, result) {
                                 if (err) {
                                     return res.status(400).json( {comment: 'Not found'});

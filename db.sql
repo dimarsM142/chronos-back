@@ -1,4 +1,4 @@
-USE heroku_58afbdcbb5cf3b1;
+USE chronos;
 
 DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS events;

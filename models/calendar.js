@@ -2,13 +2,39 @@ const database = require('../db');
 const jwt = require('jsonwebtoken');
 const {secret} = require('../config');
 
+const filteringCalendars = (req) => {
+    let stringForFiltering = '';
+
+    //фільтр limit; використовувати наступним чином: limit="123" etc.
+    let limit = (!!Number(req.query.limit) && (+req.query.limit > 0)) ? (+req.query.limit) : (-1);
+
+    //фільтр page; використовувати наступним чином: page="1" etc. 
+    let page = (!!Number(req.query.page) && (+req.query.page > 0)) ? (+req.query.page) : (-1);
+
+    //фільтр search; використовувати наступним чином: search="something" etc.
+    let search = (req.query.search !== undefined)?(req.query.search):(-1);
+
+    stringForFiltering += (search !== -1)?(` AND (title LIKE "%${search}%" OR description LIKE "%${search}%")`):('');
+
+    if(limit !== -1) {
+        if(page !== -1) {
+            stringForFiltering += ` LIMIT ${limit*(page - 1)}, ${limit}`
+        }
+        else {
+            stringForFiltering += ` LIMIT ${limit}`
+        }
+    }
+
+    return stringForFiltering;
+}
+
 module.exports = class Calendar {
     constructor(title, description) {
         this.title = title;
         this.description = description;
     }
-    getAllOwnCurrentUserCalendars(res, userId) {
-        database.query('SELECT calendars.title, calendars.description, calendars.id FROM calendars WHERE user_id=?', +userId, (err, result) => {
+    getAllOwnCurrentUserCalendars(req, res, userId) {
+        database.query('SELECT calendars.title, calendars.description FROM calendars WHERE user_id=?' + filteringCalendars(req), +userId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
@@ -17,11 +43,11 @@ module.exports = class Calendar {
             }
         });
     }
-    getAllCurrentUserSubsToCalendars(res, userId) {
-        database.query('SELECT calendars.title, calendars.description, calendars.id FROM calendars ' +
+    getAllCurrentUserSubsToCalendars(req, res, userId) {
+        database.query('SELECT calendars.title, calendars.description FROM calendars ' +
             'LEFT OUTER JOIN users_calendars ON calendars.id = users_calendars.calendar_id ' +
             'LEFT OUTER JOIN users ON users_calendars.user_id = users.id ' +
-            'WHERE users.id=?', userId, (err, result) => {
+            'WHERE users.id=?' + filteringCalendars(req), userId, (err, result) => {
                 if(err) {
                     return res.status(400).json( {comment: 'Not found'}); 
                 }
