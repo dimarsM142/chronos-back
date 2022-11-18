@@ -187,7 +187,7 @@ module.exports = class User {
             }
             imgbbUploader('cbfb2ed4fcb5a79cfbf40e535e8b532d', 'file.jpg')
             .then((response =>{
-                mysql.query(`UPDATE users SET picture='${response.url}' WHERE id=${userID}`, (err, resultUpdating)=>{
+                database.query(`UPDATE users SET picture='${response.url}' WHERE id=${userID}`, (err, resultUpdating)=>{
                     if(err) {
                         res.status(404).json({message: err});
                     }
@@ -259,7 +259,7 @@ module.exports = class User {
         });
     }
     getAvatarMe(res, userID){
-        mysql.query(`SELECT picture FROM users WHERE id=${userID}`, (err, result)=>{
+        database.query(`SELECT picture FROM users WHERE id=${userID}`, (err, result)=>{
             if(err) {
                 res.status(404).json({message: err});
             }
