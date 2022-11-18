@@ -169,8 +169,8 @@ module.exports = class User {
             }
         });
     }
-    getInfoCurrentUser(res, userId) {
-        database.query('SELECT * FROM users WHERE id = ?', +userId, (err, result) => {
+    getInfoCurrentUser(res, login) {
+        database.query('SELECT * FROM users WHERE login = ?', login, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'});
             }

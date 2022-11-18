@@ -9,7 +9,7 @@ const { getInfoCurrentUser,
 
 const router = express.Router();
 
-router.get('/me', checkTokenMiddleware, getInfoCurrentUser);
+router.get('/user/:login', checkTokenMiddleware, getInfoCurrentUser);
 router.get('/me', checkTokenMiddleware, getUsersAvatarMe);
 router.patch('/me', checkTokenMiddleware, changeInfoCurrentUser);
 router.patch('/me', checkTokenMiddleware, patchUsersAvatarMe);
