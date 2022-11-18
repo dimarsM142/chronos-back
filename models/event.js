@@ -1,6 +1,42 @@
 const database = require('../db');
 const jwt = require('jsonwebtoken');
 const {secret} = require('../config');
+//const { sendCreateEventNotification } = require('../helpers/mailHelper');
+
+const filteringEvents = (req) => {
+    let stringForFiltering = '';
+
+    //фільтр month; використовувати наступним чином: month="2011-09" etc.
+    let month = (req.query.month !== undefined && (req.query.month).length === 7 && !!Number(+(req.query.month).slice(0, 4)) && (!!Number(+(req.query.month).slice(5, 7)) 
+        && (+(req.query.month).slice(5, 7) >= 1 && +(req.query.month).slice(5, 7) <= 12)) && (req.query.month)[4] === '-') ? (req.query.month) : (-1);
+
+    //фільтр type; використовувати наступним чином: type="task" etc.
+    let type = ((req.query.type === 'arrangement' || req.query.type === 'task' || req.query.type === 'reminder'))?(req.query.type):(-1);
+
+    //фільтр limit; використовувати наступним чином: limit="123" etc.
+    let limit = (!!Number(req.query.limit) && (+req.query.limit > 0)) ? (+req.query.limit) : (-1);
+
+    //фільтр page; використовувати наступним чином: page="1" etc. 
+    let page = (!!Number(req.query.page) && (+req.query.page > 0)) ? (+req.query.page) : (-1);
+
+    //фільтр search; використовувати наступним чином: search="something" etc.
+    let search = (req.query.search !== undefined)?(req.query.search):(-1);
+
+    stringForFiltering += (month !== -1)?(` AND execution_date LIKE '${month}%'`):('');
+    stringForFiltering += (type !== -1)?(` AND type = '${type}'`):('');
+    stringForFiltering += (search !== -1)?(` AND (title LIKE "%${search}%" OR description LIKE "%${search}%")`):('');
+
+    if(limit !== -1) {
+        if(page !== -1) {
+            stringForFiltering += ` LIMIT ${limit*(page - 1)}, ${limit}`
+        }
+        else {
+            stringForFiltering += ` LIMIT ${limit}`
+        }
+    }
+
+    return stringForFiltering;
+}
 
 module.exports = class Event {
     constructor(title, description, execution_date, type, duration) {
@@ -10,14 +46,14 @@ module.exports = class Event {
         this.type = type;
         this.duration = duration;
     }
-    getAllEventsFromCurrentCalendar(res, calendarId, userId, month) {
+    getAllEventsFromCurrentCalendar(req, res, calendarId, userId) {
         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
                 if(+result[0].user_id === +userId) {
-                    database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?'  + ((month !== -1)?(` AND execution_date LIKE '%${month}%'`):('')), calendarId, (err, result) => {
+                    database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
                         if(err) {
                             return res.status(400).json( {comment: 'Not found'}); 
                         }
@@ -36,7 +72,7 @@ module.exports = class Event {
                                 return res.status(403).json(); 
                             }
                             else {
-                                database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?' + ((month !== -1)?(` AND execution_date LIKE '%${month}%'`):('')), calendarId, (err, result) => {
+                                database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
                                     if(err) {
                                         return res.status(400).json( {comment: 'Not found'}); 
                                     }
@@ -80,13 +116,11 @@ module.exports = class Event {
                     })
                 }
                 else {
-                    console.log(userId, calendarId);
                     database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
                         if(err) {
                             return res.status(400).json( {comment: 'Not found'}); 
                         }
                         else {
-                            console.log(result);
                             if(result.length === 0 || result[0].role === 'user') {
                                 return res.status(403).json(); 
                             }

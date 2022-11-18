@@ -13,8 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     login VARCHAR(30) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(60) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    role ENUM('admin', 'user') NOT NULL DEFAULT 'user'
+    email VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS calendars (

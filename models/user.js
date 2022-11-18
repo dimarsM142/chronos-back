@@ -167,4 +167,70 @@ module.exports = class User {
             }
         });
     }
+    getInfoCurrentUser(res, userId) {
+        database.query('SELECT * FROM users WHERE id = ?', +userId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                return res.status(200).json(result);
+            }
+        });
+    }
+    deleteAccountCurrentUser(res, userId) {
+        database.query('DELETE FROM users WHERE id = ?', +userId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                database.query('DELETE FROM tokens WHERE user_id = ?', +userId, (err, result) => {
+                    if (err) {
+                        return res.status(400).json( {comment: 'Not found'});
+                    }
+                    else {
+                        return res.status(200).json({message: "Your account successfully deleted!"});
+                    }
+                });
+            }
+        })
+    }
+    resave(res, userId) {
+        let user = {
+            login: this.login,
+            password: (this.password !== undefined)?(bcrypt.hashSync(this.password, bcrypt.genSaltSync(+process.env.SALT_ROUNDS))):(undefined),
+            full_name: this.full_name,
+            email: this.email
+        };
+
+        (user.login === undefined) && (delete user.login);
+        (user.password === undefined) && (delete user.password);
+        (user.full_name === undefined) && (delete user.full_name);
+        (user.email === undefined) && (delete user.email);
+
+        database.query('UPDATE users SET ? WHERE id = ?', [user, userId], function(err, result) {
+            if (err) {
+                let key;
+                if(err.sqlMessage.includes('login')) {
+                    key = 'login';
+                }
+                else if(err.sqlMessage.includes('full_name')) {
+                    key = 'full_name';
+                }
+                else if(err.sqlMessage.includes('email')) {
+                    key = 'email';
+                }
+                return res.status(400).json( {comment: 'Bad request', code: err.code, key: key});
+            }
+            else {
+                database.query('SELECT * FROM users WHERE id=?', userId, (err, result) => {
+                    if (err) {
+                        return res.status(400).json( {comment: 'Not found'});
+                    }
+                    else {
+                        return res.status(201).json(result);
+                    }
+                });
+            }
+        });
+    }
 }

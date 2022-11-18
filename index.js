@@ -2,12 +2,11 @@ require('dotenv').config();
 const express =  require('express');
 const { authentRouter, 
         calendarRouter,
-        eventRouter } = require('./routes/api/routes');
+        eventRouter,
+        userRouter } = require('./routes/api/routes');
 const { remindTasksFunction } = require('./helpers/taskHelper');
 const { remindArrangementsFunction } = require('./helpers/arrangementHelper');
 const { remindRemindersFunction } = require('./helpers/reminderHelper');
-//var fileUpload = require('express-fileupload');
-
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -20,17 +19,14 @@ const corsOptions ={
     optionSuccessStatus:200
 }
 
-//app.use(fileUpload({}));
-
 app.use(cors(corsOptions));
-
-//app.use('/img', express.static('./img'));
 
 app.use(express.json({extended: true}));
 
 app.use('/api', authentRouter);
 app.use('/api', calendarRouter);
 app.use('/api', eventRouter);
+app.use('/api', userRouter);
 
 app.listen(PORT, () => console.log(`Server is started on port: ${PORT}`));
 
