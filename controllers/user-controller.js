@@ -8,13 +8,7 @@ const getInfoCurrentUser = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let user = new User();
-    if(req.params.login){
-        user.getInfoCurrentUser(res, req.params.login);
-    }
-    else {
-        res.status(200).json({message: 'input login'});
-    }
-    
+    user.getInfoCurrentUser(res, payload.userId);
 }
 
 const  patchUsersAvatarMe = (req, res) => {
@@ -51,7 +45,7 @@ const getUsersAvatarMe = (req, res) => {
     const token = req.get('Authorization');
     const payload = jwt.verify(token, secret);
     let user = new User();
-    user.deleteAccountCurrentUser(res, payload.userId);
+    user.getAvatarMe(res, payload.userId);
 }
 
 module.exports = {

@@ -169,8 +169,8 @@ module.exports = class User {
             }
         });
     }
-    getInfoCurrentUser(res, login) {
-        database.query('SELECT * FROM users WHERE login = ?', login, (err, result) => {
+    getInfoCurrentUser(res, userId) {
+        database.query('SELECT * FROM users WHERE id = ?', +userId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'});
             }
@@ -257,5 +257,18 @@ module.exports = class User {
                 });
             }
         });
+    }
+    getAvatarMe(res, userID){
+        mysql.query(`SELECT picture FROM users WHERE id=${userID}`, (err, result)=>{
+            if(err) {
+                res.status(404).json({message: err});
+            }
+            else if(!result[0]) {
+                res.status(404).json({message :"No such user with this ID"});
+            }
+            else {
+                res.status(200).json({picture: result[0].picture});
+            }
+        })
     }
 }

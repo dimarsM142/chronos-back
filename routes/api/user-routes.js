@@ -9,10 +9,10 @@ const { getInfoCurrentUser,
 
 const router = express.Router();
 
-router.get('/user/:login', checkTokenMiddleware, getInfoCurrentUser);
-router.get('/me', checkTokenMiddleware, getUsersAvatarMe);
+router.get('/me', checkTokenMiddleware, getInfoCurrentUser);
+router.get('/me/avatar', checkTokenMiddleware, getUsersAvatarMe);
 router.patch('/me', checkTokenMiddleware, changeInfoCurrentUser);
-router.patch('/me', checkTokenMiddleware, patchUsersAvatarMe);
+router.patch('/me/avatar', checkTokenMiddleware, patchUsersAvatarMe);
 router.delete('/me', checkTokenMiddleware, deleteAccountCurrentUser);
 
 module.exports = router;
