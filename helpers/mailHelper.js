@@ -16,7 +16,6 @@ const mailer = message => {
     });
 }
 
-
 function sendResetPsw(user, token) {
     const message = {
         from: 'dimonars11032003@gmail.com',
@@ -25,7 +24,7 @@ function sendResetPsw(user, token) {
         html:`
         <h2>Account password reminder</h2>
         <i>You must follow the link in order to proceed with the password change process.</i>
-        <a href="url">http://192.168.20.251:3000?tfp=${token}</a>
+        <a href="url">http://localhost:3000/forgot-password/${token}</a>
         <p>After 5 minutes, the link will become invalid.</p>
         <br><br><p>This letter does not require a response.</p>
         `
@@ -93,14 +92,9 @@ function sendRemindByReminder(sendEventArray) {
     mailer(message);
 }
 
-function sendCreateEventNotification(usersByEventArray) {
-    let mailArray = [];
-}
-
 module.exports = {
     sendResetPsw,
     sendRemindByTask,
     sendRemindByArrangement,
-    sendRemindByReminder,
-    sendCreateEventNotification
+    sendRemindByReminder
 }

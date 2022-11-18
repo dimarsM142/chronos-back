@@ -4,7 +4,7 @@ function userValidation(data) {
     const schema = Joi.object({
         login: Joi.string().min(4).max(29).required(),
         psw: Joi.string().min(6).max(29).required(),
-        repeatpsw: Joi.string().min(6).max(29),
+        repeatpsw: Joi.string().min(6).max(29).required(),
         fname: Joi.string().min(8).max(64).required(),
         email: Joi.string().min(4).max(255).email().required()
     });
@@ -33,7 +33,7 @@ function confPswResValidation(data) {
     const schema = Joi.object({
         newpsw: Joi.string().min(6).max(29).required(),
         repeatnewpsw: Joi.string().min(6).max(29).required(),
-        login: Joi.string().required()
+        login: Joi.string()
     });
 
     return schema.validate(data);

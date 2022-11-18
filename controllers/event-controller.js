@@ -6,11 +6,13 @@ const { eventCreateValidation,
         eventChangeValidation } = require('../validators/validator');
 
 const getAllEventsFromCurrentCalendar = (req, res) => {
+    let month = ((req.query.month).length === 7 && !!Number(+(req.query.month).slice(0, 4)) && (!!Number(+(req.query.month).slice(5, 7)) 
+        && (+(req.query.month).slice(5, 7) >= 1 && +(req.query.month).slice(5, 7) <= 12)) && (req.query.month)[4] === '-') ? (req.query.month) : (-1);
     const { calendarId } = req.params;
-    const token = req.get('Authorization');
+    const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let event = new Event();
-    event.getAllEventsFromCurrentCalendar(req, res, calendarId, payload.userId);
+    event.getAllEventsFromCurrentCalendar(res, calendarId, payload.userId, month);
 }
 
 const createEventInCurrentCalendar = (req, res) => {
@@ -27,6 +29,7 @@ const createEventInCurrentCalendar = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.duration);
+    console.log(payload);
     event.createEvent(res, calendarId, payload.userId);
 }
 
