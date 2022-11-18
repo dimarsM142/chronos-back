@@ -1,19 +1,12 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport(
-    {
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-            user: process.env.EMAIL,
-            pass: process.env.PASSWORD
-        }
-    },
-    {
-        from: `Technical support <${process.env.EMAIL}>`
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth:{
+        user: 'dimonars11032003@gmail.com',
+        pass:'ejlguxmwvxxsfkxq'
     }
-);
+});
 
 const mailer = message => {
     transporter.sendMail(message, (err, info) => {
@@ -25,6 +18,7 @@ const mailer = message => {
 
 function sendResetPsw(user, token) {
     const message = {
+        from: 'dimonars11032003@gmail.com',
         to: `${user[0]['email']}`,
         subject: 'Password recovery',
         html:`
@@ -46,6 +40,7 @@ function sendRemindByTask(sendEventArray) {
         }
     }
     const message = {
+        from: 'dimonars11032003@gmail.com',
         to: `${mailArray}`,
         subject: 'Prompt',
         html:`
@@ -65,6 +60,7 @@ function sendRemindByArrangement(sendEventArray, period) {
         }
     }
     const message = {
+        from: 'dimonars11032003@gmail.com',
         to: `${mailArray}`,
         subject: 'Prompt',
         html:`
@@ -84,6 +80,7 @@ function sendRemindByReminder(sendEventArray) {
         }
     }
     const message = {
+        from: 'dimonars11032003@gmail.com',
         to: `${mailArray}`,
         subject: 'Prompt',
         html:`
