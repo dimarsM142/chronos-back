@@ -11,14 +11,14 @@ const getAllOwnCalendarsByCurrentUser = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let calendar = new Calendar();
-    calendar.getAllOwnCurrentUserCalendars(req, res, payload.userId);
+    calendar.getAllOwnCurrentUserCalendars(res, payload.userId);
 }
 
 const getAllCalendarsCurrentUserSubsTo = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let calendar = new Calendar();
-    calendar.getAllCurrentUserSubsToCalendars(req, res, payload.userId);
+    calendar.getAllCurrentUserSubsToCalendars(res, payload.userId);
 }
 
 const createCalendarByCurrentUser = (req, res) => {
