@@ -11,6 +11,15 @@ const getInfoCurrentUser = (req, res) => {
     user.getInfoCurrentUser(res, payload.userId);
 }
 
+const  patchUsersAvatarMe = (req, res) => {
+    const token = req.get('Authorization')
+    const payload = jwt.verify(token, secret);
+    let user = new User();
+    user.updateCurrentAvatarMe(res, payload.userId, req.files.file);
+        //let users = new Users();
+        //users.updateCurrentAvatarMe(res, decodedToken.result.userID, req.files.file);
+}
+
 const changeInfoCurrentUser = (req, res) => {
     if(req.body.email !== undefined && !req.body.email.endsWith("@gmail.com")) {
         return res.status(400).json( {comment: "Incorrect email entered (use gmail)!"});
@@ -32,8 +41,17 @@ const deleteAccountCurrentUser = (req, res) => {
     user.deleteAccountCurrentUser(res, payload.userId);
 }
 
+const getUsersAvatarMe = (req, res) => {
+    const token = req.get('Authorization');
+    const payload = jwt.verify(token, secret);
+    let user = new User();
+    user.deleteAccountCurrentUser(res, payload.userId);
+}
+
 module.exports = {
     getInfoCurrentUser,
     changeInfoCurrentUser,
-    deleteAccountCurrentUser
+    deleteAccountCurrentUser,
+    patchUsersAvatarMe,
+    getUsersAvatarMe
 }

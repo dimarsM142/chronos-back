@@ -4,6 +4,7 @@ const {secret} = require('../config');
 const bcrypt = require('bcrypt');
 const authHelper = require('../helpers/authHelper.js');
 const { sendResetPsw } = require('../helpers/mailHelper');
+const imgbbUploader = require('imgbb-uploader');
 
 module.exports = class User {
     constructor(login, password, full_name, email) {
@@ -58,7 +59,8 @@ module.exports = class User {
             login: this.login,
             password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(+process.env.SALT_ROUNDS)),
             full_name: this.full_name,
-            email: this.email
+            email: this.email,
+            picture: 'https://i.ibb.co/jyqT1by/3-E482896-06-CC-4-D2-A-91-DC-C19-CDBFCBC2-B-w1200-r1.webp'
         };
         database.query('SELECT EXISTS(SELECT login FROM users WHERE login = ?)', user.login, function(err, result) {
             if(err) {
@@ -175,6 +177,29 @@ module.exports = class User {
             else {
                 return res.status(200).json(result);
             }
+        });
+    }
+    updateCurrentAvatarMe(res, userID, avatar){
+        let imageFile = avatar;
+        imageFile.mv('file.jpg', (err)=>{
+            if(err){
+                res.status(400).json({message:'error'});
+            }
+            imgbbUploader('cbfb2ed4fcb5a79cfbf40e535e8b532d', 'file.jpg')
+            .then((response =>{
+                mysql.query(`UPDATE users SET picture='${response.url}' WHERE id=${userID}`, (err, resultUpdating)=>{
+                    if(err) {
+                        res.status(404).json({message: err});
+                    }
+                    else if(resultUpdating.affectedRows === 0) {
+                        res.status(404).json({message :"No such user with this ID"});
+                    }
+                    else {
+                        res.status(200).json({message: "Picture successfully added!"});
+                    }
+                })
+            }))
+            .catch((error)=>{res.status(400).json({message:"error"})})
         });
     }
     deleteAccountCurrentUser(res, userId) {
