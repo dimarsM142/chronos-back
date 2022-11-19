@@ -53,7 +53,7 @@ module.exports = class Event {
             }
             else {
                 if(+result[0].user_id === +userId) {
-                    database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
+                    database.query('SELECT title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
                         if(err) {
                             return res.status(400).json( {comment: 'Not found'}); 
                         }
@@ -72,7 +72,7 @@ module.exports = class Event {
                                 return res.status(403).json(); 
                             }
                             else {
-                                database.query('SELECT title, description, execution_date FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
+                                database.query('SELECT title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
                                     if(err) {
                                         return res.status(400).json( {comment: 'Not found'}); 
                                     }
