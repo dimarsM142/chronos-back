@@ -7,7 +7,7 @@ const { authentRouter,
 const { remindTasksFunction } = require('./helpers/taskHelper');
 const { remindArrangementsFunction } = require('./helpers/arrangementHelper');
 const { remindRemindersFunction } = require('./helpers/reminderHelper');
-
+const fileUpload = require('express-fileupload')
 const PORT = process.env.PORT || 3001;
 const app = express();
 
@@ -22,6 +22,7 @@ const corsOptions ={
 app.use(cors(corsOptions));
 
 app.use(express.json({extended: true}));
+app.use(fileUpload());
 
 app.use('/api', authentRouter);
 app.use('/api', calendarRouter);

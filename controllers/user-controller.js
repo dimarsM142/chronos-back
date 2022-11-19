@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const {secret} = require('../config');
 const database = require('../db');
 const User = require('../models/user');
+const fs = require('fs');
 const { userValidation, changeValidation } = require('../validators/validator');
 
 const getInfoCurrentUser = (req, res) => {
@@ -12,12 +13,11 @@ const getInfoCurrentUser = (req, res) => {
 }
 
 const  patchUsersAvatarMe = (req, res) => {
+
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let user = new User();
     user.updateCurrentAvatarMe(res, payload.userId, req.files.file);
-        //let users = new Users();
-        //users.updateCurrentAvatarMe(res, decodedToken.result.userID, req.files.file);
 }
 
 const changeInfoCurrentUser = (req, res) => {
