@@ -69,7 +69,7 @@ function calendarChangeValidation(data) {
 
 function calendarSubscribeValidation(data) {
     const schema = Joi.object({
-        userId: Joi.number().required(),
+        userLogin: Joi.string().min(4).max(29).required(),
         role: Joi.string().valid('admin', 'user').required()
     });
 

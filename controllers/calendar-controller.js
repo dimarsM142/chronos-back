@@ -41,7 +41,7 @@ const subscribeUserToCurrentUserCalendar = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let calendar = new Calendar();
-    calendar.subscribeUserToCalendar(res, req.body.userId, req.body.role, calendarId, payload.userId);
+    calendar.subscribeUserToCalendar(res, req.body.userLogin, req.body.role, calendarId, payload.userId);
 }
 
 const changeSubscribedUserToCurrentUserCalendar = (req, res) => {

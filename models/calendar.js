@@ -71,32 +71,45 @@ module.exports = class Calendar {
             }
         })
     }
-    subscribeUserToCalendar(res, userId, userRole, calendarId, currentUserId) {
-        if(+currentUserId !== +userId) {
-            database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
-                if(err) {
-                    return res.status(400).json( {comment: 'Not found'}); 
+    subscribeUserToCalendar(res, userLogin, userRole, calendarId, currentUserId) {
+        database.query('SELECT id FROM users WHERE login = ?', userLogin, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'}); 
+            }
+            else {
+                if(result.length === 0) {
+                    return res.status(400).json( {comment: 'User with this login does not exists!'}); 
                 }
                 else {
-                    if(+result[0].user_id === +currentUserId) {
-                        database.query('INSERT INTO users_calendars SET ?', {user_id: +userId, calendar_id: +calendarId, role: userRole}, (err, result) => {
-                            if (err) { 
-                                return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
+                    userId = +result[0].id;
+                    if(+currentUserId !== +userId) {
+                        database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                return res.status(201).json( {comment: 'User successfully subscribed to the calendar!'});
+                                if(+result[0].user_id === +currentUserId) {
+                                    database.query('INSERT INTO users_calendars SET ?', {user_id: +userId, calendar_id: +calendarId, role: userRole}, (err, result) => {
+                                        if (err) { 
+                                            return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
+                                        }
+                                        else {
+                                            return res.status(201).json( {comment: 'User successfully subscribed to the calendar!'});
+                                        }
+                                    });
+                                }
+                                else {
+                                    return res.status(403).json(); 
+                                }
                             }
                         });
                     }
                     else {
-                        return res.status(403).json(); 
+                        return res.status(400).json(); 
                     }
                 }
-            });
-        }
-        else {
-            return res.status(400).json(); 
-        }
+            }
+        });
     }
     changeSubscribedUserToCalendar(res, userId, userRole, calendarId, currentUserId) {
         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
