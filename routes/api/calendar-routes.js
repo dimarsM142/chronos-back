@@ -7,6 +7,7 @@ const { getAllOwnCalendarsByCurrentUser,
         deleteCalendarByCurrentUser,
         subscribeUserToCurrentUserCalendar,
         changeSubscribedUserToCurrentUserCalendar,
+        getAllUsersSubsedToCurrentCalendar,
         unsubscribeUserToCurrentUserCalendar } = require('../../controllers/calendar-controller');
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.get('/calendars/subsTo', checkTokenMiddleware, getAllCalendarsCurrentUser
 router.post('/calendars', checkTokenMiddleware, createCalendarByCurrentUser);                                             //Створити календар
 router.post('/calendars/:calendarId/subscribe', checkTokenMiddleware, subscribeUserToCurrentUserCalendar);                //Підписати користувача на власний календар поточного користувача
 router.patch('/calendars/:calendarId/subscribe/:userId', checkTokenMiddleware, changeSubscribedUserToCurrentUserCalendar) //Змінити статус користувача, який підписаний на власний календар поточного користувача
+router.get('/calendars/:calendarId/subscribe', checkTokenMiddleware, getAllUsersSubsedToCurrentCalendar);                 //Отримати усіх користувачів, які підписані на власний календар поточного користувача
 router.delete('/calendars/:calendarId/subscribe/:userId', checkTokenMiddleware, unsubscribeUserToCurrentUserCalendar);    //Відписати користувача від власного календаря поточного користувача
 router.patch('/calendars/:calendarId', checkTokenMiddleware, changeCalendarByCurrentUser);                                //Змінити дані власного календаря поточного користувача
 router.delete('/calendars/:calendarId', checkTokenMiddleware, deleteCalendarByCurrentUser);                               //Видалити власний календар поточного користувача
