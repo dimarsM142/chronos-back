@@ -88,7 +88,7 @@ module.exports = class Event {
             }
         });
     }
-    createEvent(res, calendarId, userId) {
+    createEvent(res, calendarId, userId, utc) {
         let event = {
             title: this.title,
             description: this.description,
@@ -97,6 +97,32 @@ module.exports = class Event {
             type: this.type,
             duration: this.duration
         }
+
+        let hoursUtc = Math.floor(Math.abs(+utc));
+        let minutesUtc = (+utc - Math.floor(+utc))*100;
+
+        ///////////////////////////////////////////////////
+
+        var newstr = this.execution_date.replace(' ', 'T');
+        let tempDate = new Date(newstr);
+        tempDate.setMinutes(tempDate.getMinutes() - tempDate.getTimezoneOffset());
+        console.log(tempDate);
+
+        ///////////////////////////////////////////////////
+
+        if(utc < 0) {
+            tempDate.setHours(tempDate.getHours() + hoursUtc );
+            tempDate.setMinutes(tempDate.getMinutes() + minutesUtc);
+        }
+        else {
+            tempDate.setHours(tempDate.getHours() - hoursUtc );
+            tempDate.setMinutes(tempDate.getMinutes() - minutesUtc);
+        }
+
+        /////////////////////////////////////////////////////
+
+        event.execution_date = tempDate.toISOString().replace('T', ' ').replace('Z', '');
+
         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
@@ -144,13 +170,39 @@ module.exports = class Event {
             }
         });
     }
-    changeEvent(res, calendarId, eventId, userId) {
+    changeEvent(res, calendarId, eventId, userId, utc) {
         let event = {
             title: this.title,
             description: this.description,
             execution_date: this.execution_date,
             type: this.type,
             duration: this.duration
+        }
+        if(event.execution_date !== undefined) {
+            let hoursUtc = Math.floor(Math.abs(+utc));
+            let minutesUtc = (+utc - Math.floor(+utc))*100;
+
+            ///////////////////////////////////////////////////
+
+            var newstr = this.execution_date.replace(' ', 'T');
+            let tempDate = new Date(newstr);
+            tempDate.setMinutes(tempDate.getMinutes() - tempDate.getTimezoneOffset());
+            console.log(tempDate);
+
+            ///////////////////////////////////////////////////
+
+            if(utc < 0) {
+                tempDate.setHours(tempDate.getHours() + hoursUtc );
+                tempDate.setMinutes(tempDate.getMinutes() + minutesUtc);
+            }
+            else {
+                tempDate.setHours(tempDate.getHours() - hoursUtc );
+                tempDate.setMinutes(tempDate.getMinutes() - minutesUtc);
+            }
+
+            event.execution_date = tempDate.toISOString().replace('T', ' ').replace('Z', '');
+
+            /////////////////////////////////////////////////////
         }
         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
             if(err) {

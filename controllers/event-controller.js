@@ -27,7 +27,7 @@ const createEventInCurrentCalendar = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.duration);
-    event.createEvent(res, calendarId, payload.userId);
+    event.createEvent(res, calendarId, payload.userId, +req.body.utc);
 }
 
 const changeEventInCurrentCalendar = (req, res) => {
@@ -44,7 +44,7 @@ const changeEventInCurrentCalendar = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.duration);
-    event.changeEvent(res, calendarId, eventId, payload.userId);
+    event.changeEvent(res, calendarId, eventId, payload.userId, +req.body.utc);
 }
 
 const deleteEventFromCurrentCalendar = (req, res) => {
