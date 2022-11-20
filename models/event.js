@@ -26,6 +26,8 @@ const filteringEvents = (req) => {
     stringForFiltering += (type !== -1)?(` AND type = '${type}'`):('');
     stringForFiltering += (search !== -1)?(` AND (title LIKE "%${search}%" OR description LIKE "%${search}%")`):('');
 
+    stringForFiltering += ' ORDER BY execution_date';
+
     if(limit !== -1) {
         if(page !== -1) {
             stringForFiltering += ` LIMIT ${limit*(page - 1)}, ${limit}`
