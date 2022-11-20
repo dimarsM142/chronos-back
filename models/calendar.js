@@ -81,7 +81,7 @@ module.exports = class Calendar {
                     return res.status(400).json( {comment: 'User with this login does not exists!'}); 
                 }
                 else {
-                    userId = +result[0].id;
+                    let userId = +result[0].id;
                     if(+currentUserId !== +userId) {
                         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
                             if(err) {
