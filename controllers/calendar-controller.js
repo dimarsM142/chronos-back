@@ -69,7 +69,7 @@ const unsubscribeUserToCurrentUserCalendar = (req, res) => {
     const token = req.get('Authorization')
     const payload = jwt.verify(token, secret);
     let calendar = new Calendar();
-    calendar.unsubscribeUserToCalendar(res, userId === 0 ? payload.userId : userId, calendarId, payload.userId);
+    calendar.unsubscribeUserToCalendar(res, userId == 0 ? payload.userId : userId, calendarId, payload.userId);
 }
 
 const changeCalendarByCurrentUser = (req, res) => {
