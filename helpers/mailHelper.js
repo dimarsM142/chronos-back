@@ -32,60 +32,90 @@ function sendResetPsw(user, token) {
     mailer(message);
 }
 
-function sendRemindByTask(sendEventArray) {
-    let mailArray = [];
-    for(let i = 0; i < sendEventArray.length; i++) {
-        for(let j = 0; j < sendEventArray[i].email.length; j++) {
-            mailArray.push(sendEventArray[i].email[j]);
-        }
-    }
+function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
     const message = {
         from: 'dimonars11032003@gmail.com',
-        to: `${mailArray}`,
+        to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
         <h2>Task remind</h2>
-        <p>Until tomorrow, you need to complete some task!</p>
+        <p>According to "${calendarTitle}" calendar, you have "${eventTitle}" to complete. Deadline - tomorrow!</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }
     mailer(message);
 }
 
-function sendRemindByArrangement(sendEventArray, period) {
-    let mailArray = [];
-    for(let i = 0; i < sendEventArray.length; i++) {
-        for(let j = 0; j < sendEventArray[i].email.length; j++) {
-            mailArray.push(sendEventArray[i].email[j]);
-        }
-    }
+function sendRemindByArrangement(sendEventArray, eventTitle, calendarTitle) {
     const message = {
         from: 'dimonars11032003@gmail.com',
-        to: `${mailArray}`,
+        to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
         <h2>Arrangement remind</h2>
-        <p>There will be some scheduled event in ${period}!</p>
+        <p>In 1 hour, an event "${eventTitle}" will occur in the calendar "${calendarTitle}"!</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }
     mailer(message);
 }
 
-function sendRemindByReminder(sendEventArray) {
-    let mailArray = [];
+function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
+    /*let mailArray = [];
     for(let i = 0; i < sendEventArray.length; i++) {
         for(let j = 0; j < sendEventArray[i].email.length; j++) {
             mailArray.push(sendEventArray[i].email[j]);
         }
-    }
+    }*/
     const message = {
         from: 'dimonars11032003@gmail.com',
-        to: `${mailArray}`,
+        to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
         <h2>Reminder</h2>
-        <p>You have planned to do something now!</p>
+        <p>According to "${calendarTitle}" calendar, need to take "${eventTitle}" now</p>
+        <br><br><p>This letter does not require a response.</p>
+        `
+    }
+    mailer(message);
+}
+
+function createEventNtfc(sendEventArray, calendarTitle, eventType) {
+    const message = {
+        from: 'dimonars11032003@gmail.com',
+        to: `${sendEventArray}`,
+        subject: 'Prompt',
+        html:`
+        <h2>Notification</h2>
+        <p>A new ${eventType} has appeared in the "${calendarTitle}" calendar</p>
+        <br><br><p>This letter does not require a response.</p>
+        `
+    }
+    mailer(message);
+}
+
+function changeEventNtfc(sendEventArray, calendarTitle, eventType, eventTitle) {
+    const message = {
+        from: 'dimonars11032003@gmail.com',
+        to: `${sendEventArray}`,
+        subject: 'Prompt',
+        html:`
+        <h2>Notification</h2>
+        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar ${calendarTitle} was changed</p>
+        <br><br><p>This letter does not require a response.</p>
+        `
+    }
+    mailer(message);
+}
+
+function deleteEventNtfc(sendEventArray, calendarTitle, eventTitle) {
+    const message = {
+        from: 'dimonars11032003@gmail.com',
+        to: `${sendEventArray}`,
+        subject: 'Prompt',
+        html:`
+        <h2>Notification</h2>
+        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar ${calendarTitle} was deleted</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }
@@ -96,5 +126,8 @@ module.exports = {
     sendResetPsw,
     sendRemindByTask,
     sendRemindByArrangement,
-    sendRemindByReminder
+    sendRemindByReminder,
+    createEventNtfc,
+    changeEventNtfc,
+    deleteEventNtfc
 }

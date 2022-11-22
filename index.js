@@ -4,9 +4,11 @@ const { authentRouter,
         calendarRouter,
         eventRouter,
         userRouter } = require('./routes/api/routes');
-const { remindTasksFunction } = require('./helpers/taskHelper');
+const shedule = require('node-schedule');
+/*const { remindTasksFunction } = require('./helpers/taskHelper');
 const { remindArrangementsFunction } = require('./helpers/arrangementHelper');
-const { remindRemindersFunction } = require('./helpers/reminderHelper');
+const { remindRemindersFunction } = require('./helpers/reminderHelper');*/
+const { checkRemindesFunction } = require('./helpers/checkRemindesHelper');
 const fileUpload = require('express-fileupload')
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -31,6 +33,8 @@ app.use('/api', userRouter);
 
 app.listen(PORT, () => console.log(`Server is started on port: ${PORT}`));
 
-setInterval(remindTasksFunction, 100000);
-setInterval(remindArrangementsFunction, 100000);
-setInterval(remindRemindersFunction, 10000);
+//setInterval(remindTasksFunction, 100000);
+//setInterval(remindArrangementsFunction, 100000);
+//setInterval(remindRemindersFunction, 10000);
+
+checkRemindesFunction();

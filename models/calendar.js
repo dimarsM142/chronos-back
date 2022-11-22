@@ -1,6 +1,4 @@
 const database = require('../db');
-const jwt = require('jsonwebtoken');
-const {secret} = require('../config');
 
 const filteringCalendars = (req) => {
     let stringForFiltering = '';
@@ -88,24 +86,29 @@ module.exports = class Calendar {
                                 return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                if(+result[0].user_id === +currentUserId) {
-                                    database.query('INSERT INTO users_calendars SET ?', {user_id: +userId, calendar_id: +calendarId, role: userRole}, (err, result) => {
-                                        if (err) { 
-                                            return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
-                                        }
-                                        else {
-                                            return res.status(201).json( {comment: 'User successfully subscribed to the calendar!'});
-                                        }
-                                    });
+                                if(result.length !== 0) {
+                                    if(+result[0].user_id === +currentUserId) {
+                                        database.query('INSERT INTO users_calendars SET ?', {user_id: +userId, calendar_id: +calendarId, role: userRole}, (err, result) => {
+                                            if (err) { 
+                                                return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
+                                            }
+                                            else {
+                                                return res.status(201).json( {comment: 'User successfully subscribed to the calendar!'});
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        return res.status(403).json(); 
+                                    }
                                 }
                                 else {
-                                    return res.status(403).json(); 
+                                    return res.status(400).json( {comment: 'Not found'}); 
                                 }
                             }
                         });
                     }
                     else {
-                        return res.status(400).json(); 
+                        return res.status(403).json(); 
                     }
                 }
             }
@@ -117,18 +120,23 @@ module.exports = class Calendar {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +currentUserId) {
-                    database.query('UPDATE users_calendars SET ? WHERE user_id = ? AND calendar_id = ?', [{role: userRole}, userId, calendarId], (err, result) => {
-                        if (err) { 
-                            return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
-                        }
-                        else {
-                            return res.status(200).json( {comment: 'Subscribed user to the calendar role successfully changed!'});
-                        }
-                    });
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +currentUserId) {
+                        database.query('UPDATE users_calendars SET ? WHERE user_id = ? AND calendar_id = ?', [{role: userRole}, userId, calendarId], (err, result) => {
+                            if (err) { 
+                                return res.status(400).json( {comment: 'The user is already subscribed to this calendar!'});
+                            }
+                            else {
+                                return res.status(200).json( {comment: 'Subscribed user to the calendar role successfully changed!'});
+                            }
+                        });
+                    }
+                    else {
+                        return res.status(403).json(); 
+                    }
                 }
                 else {
-                    return res.status(403).json(); 
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });
@@ -139,20 +147,25 @@ module.exports = class Calendar {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +currentUserId) {
-                    database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
-                        ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
-                        ' WHERE calendar_id = ?', calendarId, (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            return res.status(200).json(result);
-                        }
-                    })
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +currentUserId) {
+                        database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
+                            ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                            ' WHERE calendar_id = ?', calendarId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                return res.status(200).json(result);
+                            }
+                        })
+                    }
+                    else {
+                        return res.status(403).json();
+                    }
                 }
                 else {
-                    return res.status(403).json();
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });
@@ -163,18 +176,23 @@ module.exports = class Calendar {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +currentUserId || +userId === +currentUserId) {
-                    database.query('DELETE FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            return res.status(204).json( {comment: 'The user has successfully unsubscribed from the calendar!'});
-                        }
-                    })
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +currentUserId || +userId === +currentUserId) {
+                        database.query('DELETE FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                return res.status(204).json( {comment: 'The user has successfully unsubscribed from the calendar!'});
+                            }
+                        })
+                    }
+                    else {
+                        return res.status(403).json();
+                    }
                 }
                 else {
-                    return res.status(403).json();
+                    return res.status(400).json( {comment: 'Not found'});
                 }
             }
         });
@@ -189,20 +207,54 @@ module.exports = class Calendar {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    (calendar.title === undefined) && (delete calendar.title);
-                    (calendar.description === undefined) && (delete calendar.description);
-                    database.query('UPDATE calendars SET ? WHERE id = ?', [calendar, calendarId], (err, result) => { 
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            return res.status(200).json( {comment: 'Calendar succesfully changed!'});
-                        }
-                    });
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +userId) {
+                        (calendar.title === undefined) && (delete calendar.title);
+                        (calendar.description === undefined) && (delete calendar.description);
+                        database.query('UPDATE calendars SET ? WHERE id = ?', [calendar, calendarId], (err, result) => { 
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                return res.status(200).json( {comment: 'Calendar succesfully changed!'});
+                            }
+                        });
+                    }
+                    else {
+                        return res.status(403).json(); 
+                    }
                 }
                 else {
-                    return res.status(403).json(); 
+                    return res.status(400).json( {comment: 'Not found'}); 
+                }
+            }
+        })
+    }
+    getCurrentUserRoleInCurrentCalendar(res, calendarId, currentUserId) {
+        database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'}); 
+            }
+            else {
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +currentUserId) {
+                        let result = [];
+                        result[0] = {role: 'owner'};
+                        return res.status(200).json(result);
+                    }
+                    else {
+                        database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [currentUserId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                return res.status(200).json(result);
+                            }
+                        });
+                    }
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         })
@@ -213,18 +265,23 @@ module.exports = class Calendar {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    database.query('DELETE FROM calendars WHERE id=?', calendarId, (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            return res.status(204).json( {comment: 'Calendar succesfully deleted!'});
-                        }
-                    })
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +userId) {
+                        database.query('DELETE FROM calendars WHERE id=?', calendarId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                return res.status(204).json( {comment: 'Calendar succesfully deleted!'});
+                            }
+                        })
+                    }
+                    else {
+                        return res.status(403).json(); 
+                    }
                 }
                 else {
-                    return res.status(403).json(); 
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         })

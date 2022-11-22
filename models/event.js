@@ -1,7 +1,10 @@
 const database = require('../db');
-const jwt = require('jsonwebtoken');
-const {secret} = require('../config');
-//const { sendCreateEventNotification } = require('../helpers/mailHelper');
+const { createRemindFunction,
+        changeRemindFunction,
+        deleteRemindFunction } = require('../helpers/checkRemindesHelper');
+const { createEventNtfc,
+        changeEventNtfc,
+        deleteEventNtfc } = require('../helpers/mailHelper');
 
 const filteringEvents = (req) => {
     let stringForFiltering = '';
@@ -54,38 +57,43 @@ module.exports = class Event {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    database.query('SELECT id, title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            return res.status(200).json(result);
-                        }
-                    })
-                }
-                else {
-                    database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            if(result.length === 0) {
-                                return res.status(403).json(); 
+                if(result.length !== 0) {
+                    if(+result[0].user_id === +userId) {
+                        database.query('SELECT id, title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                database.query('SELECT id, title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
-                                    if(err) {
-                                        return res.status(400).json( {comment: 'Not found'}); 
-                                    }
-                                    else {
-                                        return res.status(200).json(result);
-                                    }
-                                })
+                                return res.status(200).json(result);
                             }
-                        }
-                    })
-                    
+                        })
+                    }
+                    else {
+                        database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                if(result.length === 0) {
+                                    return res.status(403).json(); 
+                                }
+                                else {
+                                    database.query('SELECT id, title, description, execution_date, type, duration FROM events WHERE calendar_id = ?' + filteringEvents(req), calendarId, (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            return res.status(200).json(result);
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                        
+                    }
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });
@@ -108,7 +116,6 @@ module.exports = class Event {
         var newstr = this.execution_date.replace(' ', 'T');
         let tempDate = new Date(newstr);
         tempDate.setMinutes(tempDate.getMinutes() - tempDate.getTimezoneOffset());
-        console.log(tempDate);
 
         ///////////////////////////////////////////////////
 
@@ -125,53 +132,95 @@ module.exports = class Event {
 
         event.execution_date = tempDate.toISOString().replace('T', ' ').replace('Z', '');
 
-        database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
+        database.query('SELECT user_id, title, users.email AS email FROM calendars LEFT OUTER JOIN users ON calendars.user_id = users.id' +
+            ' WHERE calendars.id = ?', calendarId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    if(event.type !== "arrangement") {
-                        event.duration = 0;
-                    }
-                    database.query('INSERT INTO events SET ?', event, (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
+                if(result.length !== 0) {
+                    let calendarTitle = result[0].title;
+                    let ownerEmail = result[0].email;
+                    if(+result[0].user_id === +userId) {
+                        if(event.type !== "arrangement") {
+                            event.duration = 0;
                         }
-                        else {
-                            return res.status(201).json( {comment: 'Event succesfully created!'});
-                        }
-                    })
-                }
-                else {
-                    database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            if(result.length === 0 || result[0].role === 'user') {
-                                return res.status(403).json(); 
+                        database.query('INSERT INTO events SET ?', event, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                if(event.type !== "arrangement") {
-                                    event.duration = 0;
-                                }
-                                database.query('INSERT INTO events SET ?', event, (err, result) => {
+                                let insertId = result.insertId;
+                                database.query('SELECT users_calendars.user_id, users_calendars.role, users.login, users.email FROM users_calendars' +
+                                    ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                                    ' WHERE calendar_id = ?', calendarId, (err, result) => {
                                     if(err) {
                                         return res.status(400).json( {comment: 'Not found'}); 
                                     }
                                     else {
+                                        let emailArray = [];
+                                        for(let i = 0; i < result.length; i++) {
+                                            emailArray.push(result[i].email);
+                                        }
+                                        createEventNtfc(emailArray, calendarTitle, event.type);
+                                        createRemindFunction(insertId, event.execution_date.replace(' ', 'T'), event.type);
                                         return res.status(201).json( {comment: 'Event succesfully created!'});
                                     }
                                 })
                             }
-                        }
-                    })
-                    
+                        })
+                    }
+                    else {
+                        database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                if(result.length === 0 || result[0].role === 'user') {
+                                    return res.status(403).json(); 
+                                }
+                                else {
+                                    if(event.type !== "arrangement") {
+                                        event.duration = 0;
+                                    }
+                                    database.query('INSERT INTO events SET ?', event, (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            let insertId = result.insertId;
+                                            database.query('SELECT users_calendars.user_id, users_calendars.role, users.login, users.email FROM users_calendars' +
+                                                ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                                                ' WHERE calendar_id = ? AND users_calendars.user_id != ?', [calendarId, userId], (err, result) => {
+                                                if(err) {
+                                                    return res.status(400).json( {comment: 'Not found'}); 
+                                                }
+                                                else {
+                                                    let emailArray = [];
+                                                    for(let i = 0; i < result.length; i++) {
+                                                        emailArray.push(result[i].email);
+                                                    }
+                                                    emailArray.push(ownerEmail);
+                                                    createEventNtfc(emailArray, calendarTitle, event.type);
+                                                    createRemindFunction(insertId, event.execution_date.replace(' ', 'T'), event.type);
+                                                    return res.status(201).json( {comment: 'Event succesfully created!'});
+                                                }
+                                            })
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                        
+                    }
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });
     }
+    ///////////Доробити відправку повідомлень при зміні та видаленні івенту!!!!!!!!!!!
     changeEvent(res, calendarId, eventId, userId, utc) {
         let event = {
             title: this.title,
@@ -211,53 +260,99 @@ module.exports = class Event {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    (event.title === undefined) && (delete event.title);
-                    (event.description === undefined) && (delete event.description);
-                    (event.execution_date === undefined) && (delete event.execution_date);
-                    (event.type === undefined) && (delete event.type);
-                    (event.duration === undefined) && (delete event.duration);
-                    if(event.duration !== undefined && event.type !== "arrangement") {
-                        event.duration = 0;
-                    }
-                    database.query('UPDATE events SET ? WHERE id = ?', [event, eventId], (err, result) => { 
+                if(result.length !== 0) {
+                    let ownerId = result[0].user_id;
+                    database.query('SELECT * FROM events WHERE id = ?', eventId, (err, result) => {
                         if(err) {
                             return res.status(400).json( {comment: 'Not found'}); 
                         }
                         else {
-                            return res.status(200).json( {comment: 'Event succesfully changed!'});
-                        }
-                    });
-                }
-                else {
-                    database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            if(result.length === 0  || result[0].role === 'user') {
-                                return res.status(403).json(); 
+                            if(result.length !== 0) {
+                                if(+ownerId === +userId) {
+                                    (event.title === undefined) && (delete event.title);
+                                    (event.description === undefined) && (delete event.description);
+                                    (event.execution_date === undefined) && (delete event.execution_date);
+                                    (event.type === undefined) && (delete event.type);
+                                    (event.duration === undefined) && (delete event.duration);
+                                    if(event.duration && event.type !== "arrangement") {
+                                        event.duration = 0;
+                                    }
+                                    database.query('UPDATE events SET ? WHERE id = ?', [event, eventId], (err, result) => { 
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            if(event.execution_date && event.type) {
+                                                changeRemindFunction(eventId, event.execution_date, event.type);
+                                                return res.status(200).json( {comment: 'Event succesfully changed!'});
+                                            }
+                                            else {
+                                                database.query('SELECT * FROM events WHERE id = ?', eventId, (err, result) => {
+                                                    if(err) {
+                                                        return res.status(400).json( {comment: 'Not found'}); 
+                                                    }
+                                                    else {
+                                                        changeRemindFunction(eventId, result[0].execution_date, result[0].type);
+                                                        return res.status(200).json( {comment: 'Event succesfully changed!'});
+                                                    }
+                                                })
+                                            }
+                                        }
+                                    });
+                                }
+                                else {
+                                    database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            if(result.length === 0  || result[0].role === 'user') {
+                                                return res.status(403).json(); 
+                                            }
+                                            else {
+                                                (event.title === undefined) && (delete event.title);
+                                                (event.description === undefined) && (delete event.description);
+                                                (event.execution_date === undefined) && (delete event.execution_date);
+                                                (event.type === undefined) && (delete event.type);
+                                                (event.duration === undefined) && (delete event.duration);
+                                                if(event.duration && event.type !== "arrangement") {
+                                                    event.duration = 0;
+                                                }
+                                                database.query('UPDATE events SET ? WHERE id = ?', [event, eventId], (err, result) => { 
+                                                    if(err) {
+                                                        return res.status(400).json( {comment: 'Not found'}); 
+                                                    }
+                                                    else {
+                                                        if(event.execution_date && event.type) {
+                                                            changeRemindFunction(eventId, event.execution_date, event.type);
+                                                            return res.status(200).json( {comment: 'Event succesfully changed!'});
+                                                        }
+                                                        else {
+                                                            database.query('SELECT * FROM events WHERE id = ?', eventId, (err, result) => {
+                                                                if(err) {
+                                                                    return res.status(400).json( {comment: 'Not found'}); 
+                                                                }
+                                                                else {
+                                                                    changeRemindFunction(eventId, result[0].execution_date, result[0].type);
+                                                                    return res.status(200).json( {comment: 'Event succesfully changed!'});
+                                                                }
+                                                            })
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    })
+                                }
                             }
                             else {
-                                (event.title === undefined) && (delete event.title);
-                                (event.description === undefined) && (delete event.description);
-                                (event.execution_date === undefined) && (delete event.execution_date);
-                                (event.type === undefined) && (delete event.type);
-                                (event.duration === undefined) && (delete event.duration);
-                                if(event.type !== "arrangement") {
-                                    event.duration = 0;
-                                }
-                                database.query('UPDATE events SET ? WHERE id = ?', [event, eventId], (err, result) => { 
-                                    if(err) {
-                                        return res.status(400).json( {comment: 'Not found'}); 
-                                    }
-                                    else {
-                                        return res.status(200).json( {comment: 'Event succesfully changed!'});
-                                    }
-                                });
+                                return res.status(400).json( {comment: 'Not found'});
                             }
                         }
                     })
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });
@@ -268,37 +363,57 @@ module.exports = class Event {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
-                if(+result[0].user_id === +userId) {
-                    database.query('DELETE FROM events WHERE id=?', eventId, (err, result) => {
+                if(result.length !== 0) {
+                    let ownerId = result[0].user_id;
+                    database.query('SELECT * FROM events WHERE id = ?', eventId, (err, result) => {
                         if(err) {
                             return res.status(400).json( {comment: 'Not found'}); 
                         }
                         else {
-                            return res.status(204).json();
+                            if(result.length !== 0) {
+                                if(+ownerId === +userId) {
+                                    database.query('DELETE FROM events WHERE id=?', eventId, (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            deleteRemindFunction(eventId);
+                                            return res.status(204).json();
+                                        }
+                                    })
+                                }
+                                else {
+                                    database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            if(result.length === 0  || result[0].role === 'user') {
+                                                return res.status(403).json(); 
+                                            }
+                                            else {
+                                                database.query('DELETE FROM events WHERE id=?', eventId, (err, result) => {
+                                                    if(err) {
+                                                        return res.status(400).json( {comment: 'Not found'}); 
+                                                    }
+                                                    else {
+                                                        deleteRemindFunction(eventId);
+                                                        return res.status(204).json();
+                                                    }
+                                                })
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                            else {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
                         }
                     })
                 }
                 else {
-                    database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [userId, calendarId], (err, result) => {
-                        if(err) {
-                            return res.status(400).json( {comment: 'Not found'}); 
-                        }
-                        else {
-                            if(result.length === 0  || result[0].role === 'user') {
-                                return res.status(403).json(); 
-                            }
-                            else {
-                                database.query('DELETE FROM events WHERE id=?', eventId, (err, result) => {
-                                    if(err) {
-                                        return res.status(400).json( {comment: 'Not found'}); 
-                                    }
-                                    else {
-                                        return res.status(204).json();
-                                    }
-                                })
-                            }
-                        }
-                    })
+                    return res.status(400).json( {comment: 'Not found'}); 
                 }
             }
         });

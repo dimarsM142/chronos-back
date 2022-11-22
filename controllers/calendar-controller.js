@@ -78,10 +78,18 @@ const changeCalendarByCurrentUser = (req, res) => {
         return res.status(400).json( {comment: error.details[0].message});
     }
     const { calendarId } = req.params;
-    const token = req.get('Authorization')
+    const token = req.get('Authorization');
     const payload = jwt.verify(token, secret);
     let calendar = new Calendar(req.body.title, req.body.description);
     calendar.changeCalendar(res, calendarId, payload.userId);
+}
+
+const getCurrentUserRoleInCurrentCalendar = (req, res) => {
+    const { calendarId } = req.params;
+    const token = req.get('Authorization');
+    const payload = jwt.verify(token, secret);
+    let calendar = new Calendar();
+    calendar.getCurrentUserRoleInCurrentCalendar(res, calendarId, payload.userId);
 }
 
 const deleteCalendarByCurrentUser = (req, res) => {
@@ -101,5 +109,6 @@ module.exports = {
     getAllUsersSubsedToCurrentCalendar,
     unsubscribeUserToCurrentUserCalendar,
     changeCalendarByCurrentUser,
+    getCurrentUserRoleInCurrentCalendar,
     deleteCalendarByCurrentUser
 }

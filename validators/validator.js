@@ -101,7 +101,7 @@ function eventChangeValidation(data) {
     const schema = Joi.object({
         title: Joi.string().min(6).max(29),
         description: Joi.string().min(6),
-        executionDate: Joi.string().length(("2022-04-22 10:34:23.55").length).example("2022-04-22 10:34:23.55"),
+        executionDate: Joi.string().min(("2022-04-22 10:34:23").length).max(("2022-04-22 10:34:23").length + 4).example("2022-04-22 10:34:23"),
         type: Joi.string().valid('arrangement', 'reminder', 'task'),
         duration: Joi.number().min(5*60).max(12*60*60),
         utc: Joi.number().min(-11).max(+13.45)
