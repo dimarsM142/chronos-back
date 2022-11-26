@@ -47,6 +47,14 @@ const changeEventInCurrentCalendar = (req, res) => {
     event.changeEvent(res, calendarId, eventId, payload.userId, +req.body.utc);
 }
 
+const getCurrentEventInfo = (req, res) => {
+    const { eventId } = req.params;
+    const token = req.get('Authorization');
+    const payload = jwt.verify(token, secret);
+    let event = new Event();
+    event.getCurrentEventInfo(res, eventId, payload.userId);
+}
+
 const deleteEventFromCurrentCalendar = (req, res) => {
     const { calendarId, eventId } = req.params;
     const token = req.get('Authorization')
@@ -59,5 +67,6 @@ module.exports = {
     getAllEventsFromCurrentCalendar,
     createEventInCurrentCalendar,
     changeEventInCurrentCalendar,
+    getCurrentEventInfo,
     deleteEventFromCurrentCalendar
 }

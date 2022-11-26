@@ -94,28 +94,31 @@ function createEventNtfc(sendEventArray, calendarTitle, eventType) {
     mailer(message);
 }
 
-function changeEventNtfc(sendEventArray, calendarTitle, eventType, eventTitle) {
+function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //.toISOString().replace('T', ' ').replace('Z', '')
     const message = {
         from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
         <h2>Notification</h2>
-        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar ${calendarTitle} was changed</p>
+        <p>${oldEvent.type[0].toUpperCase() + oldEvent.type.slice(1)} "${oldEvent.title}" in calendar "${calendarTitle}" was changed</p>
+        <p>Current information about this:<br></p>
+        <p>Title: ${newEvent.title}, description: ${newEvent.description}, execution date: ${newEvent.execution_date.toISOString().replace('T', ' ').replace('Z', '').slice(0, 16)},
+        ${(newEvent.type !== 'arrangement')?(''):(`duration: ${newEvent.duration},`)} type: ${newEvent.type}</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }
     mailer(message);
 }
 
-function deleteEventNtfc(sendEventArray, calendarTitle, eventTitle) {
+function deleteEventNtfc(sendEventArray, calendarTitle, eventTitle, eventType) {
     const message = {
         from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
         <h2>Notification</h2>
-        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar ${calendarTitle} was deleted</p>
+        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar "${calendarTitle}" was deleted</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }

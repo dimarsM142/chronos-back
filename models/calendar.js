@@ -3,10 +3,10 @@ const database = require('../db');
 const filteringCalendars = (req) => {
     let stringForFiltering = '';
 
-    //фільтр limit; використовувати наступним чином: limit="123" etc.
+    //фільтр limit; використовувати наступним чином: limit=123 etc.
     let limit = (!!Number(req.query.limit) && (+req.query.limit > 0)) ? (+req.query.limit) : (-1);
 
-    //фільтр page; використовувати наступним чином: page="1" etc. 
+    //фільтр page; використовувати наступним чином: page=1 etc. 
     let page = (!!Number(req.query.page) && (+req.query.page > 0)) ? (+req.query.page) : (-1);
 
     //фільтр search; використовувати наступним чином: search="something" etc.

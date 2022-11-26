@@ -3,6 +3,7 @@ USE heroku_58afbdcbb5cf3b1;
 DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS users_calendars;
+DROP TABLE IF EXISTS invitations;
 
 DROP TABLE IF EXISTS calendars;
 DROP TABLE IF EXISTS users;
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(60) NOT NULL,
     picture VARCHAR(255) DEFAULT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE
+    email VARCHAR(255) NOT NULL UNIQUE,
 );
 
 CREATE TABLE IF NOT EXISTS calendars (
@@ -46,6 +47,14 @@ CREATE TABLE IF NOT EXISTS users_calendars (
     FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (calendar_id) REFERENCES calendars(id) ON DELETE CASCADE,
     role ENUM('admin', 'user') NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS invitations (
+    user_id INT(8) UNSIGNED NOT NULL,
+    arrangement_id INT(8) UNSIGNED NOT NULL,
+    PRIMARY KEY (user_id, arrangement_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (arrangement_id) REFERENCES events(id) ON DELETE CASCADE,
 );
 
 CREATE TABLE IF NOT EXISTS tokens (

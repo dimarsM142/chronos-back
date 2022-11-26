@@ -37,4 +37,4 @@ app.listen(PORT, () => console.log(`Server is started on port: ${PORT}`));
 //setInterval(remindArrangementsFunction, 100000);
 //setInterval(remindRemindersFunction, 10000);
 
-checkRemindesFunction();
+//checkRemindesFunction();
