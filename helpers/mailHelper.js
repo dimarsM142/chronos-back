@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth:{
-        user: 'chr0n0s.onemailer@gmail.com',
-        pass:'A-baba-gala-1'
+        user: 'dimonars11032003@gmail.com',
+        pass:'ejlguxmwvxxsfkxq'
     }
 });
 
@@ -18,7 +18,7 @@ const mailer = message => {
 
 function sendResetPsw(user, token) {
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${user[0]['email']}`,
         subject: 'Password recovery',
         html:`
@@ -34,7 +34,7 @@ function sendResetPsw(user, token) {
 
 function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
@@ -48,7 +48,7 @@ function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
 
 function sendRemindByArrangement(sendEventArray, eventTitle, calendarTitle) {
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
@@ -68,7 +68,7 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
         }
     }*/
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
@@ -82,7 +82,7 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
 
 function createEventNtfc(sendEventArray, calendarTitle, eventType) {
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
@@ -96,7 +96,7 @@ function createEventNtfc(sendEventArray, calendarTitle, eventType) {
 
 function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //.toISOString().replace('T', ' ').replace('Z', '')
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
@@ -113,7 +113,7 @@ function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //
 
 function deleteEventNtfc(sendEventArray, calendarTitle, eventTitle, eventType) {
     const message = {
-        from: 'chr0n0s.onemailer@gmail.com',
+        from: 'dimonars11032003@gmail.com',
         to: `${sendEventArray}`,
         subject: 'Prompt',
         html:`
