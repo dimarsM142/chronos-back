@@ -24,7 +24,7 @@ function sendResetPsw(user, token) {
         html:`
         <h2>Account password reminder</h2>
         <i>You must follow the link in order to proceed with the password change process.</i>
-        <a href="url">http://localhost:3000/forgot-password/${token}</a>
+        <a href="url">https://chron0s.herokuapp.com/forgot-password/${token}</a>
         <p>After 5 minutes, the link will become invalid.</p>
         <br><br><p>This letter does not require a response.</p>
         `
