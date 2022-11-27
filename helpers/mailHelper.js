@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 const mailer = message => {
     transporter.sendMail(message, (err, info) => {
         if(err) {
-            return res.status(400).json( {comment: 'Not found'});
+            console.log('Some problem with send mail!')
         }
     });
 }
