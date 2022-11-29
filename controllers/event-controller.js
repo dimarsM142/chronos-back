@@ -62,6 +62,14 @@ const getCurrentEventInfo = (req, res) => {
     event.getCurrentEventInfo(res, eventId, payload.userId);
 }
 
+const getAuthorByCurrentEvent = (req, res) => {
+    const { eventId } = req.params;
+    const token = req.get('Authorization');
+    const payload = jwt.verify(token, secret);
+    let event = new Event();
+    event.getAuthorByCurrentEvent(res, eventId, payload.userId);
+}
+
 const getAllUsersInvitedToArrangement = (req, res) => {
     const { calendarId, eventId } = req.params;
     const token = req.get('Authorization');
@@ -83,6 +91,7 @@ module.exports = {
     createEventInCurrentCalendar,
     changeEventInCurrentCalendar,
     getCurrentEventInfo,
+    getAuthorByCurrentEvent,
     getAllUsersInvitedToArrangement,
     deleteEventFromCurrentCalendar
 }

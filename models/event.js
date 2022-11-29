@@ -33,6 +33,9 @@ const filteringEvents = (req, modify) => {
     //фільтр search; використовувати наступним чином: search=something etc.
     let search = (req.query.search !== undefined)?(req.query.search):(-1);
 
+    //фільтр category; використовувати наступним чином: category=home
+    let category = (req.query.category !== undefined && (req.query.category === 'home' || req.query.category === 'work' || req.query.category === 'sport'))?(req.query.category):(-1);
+
     if(week !== -1) {
         let utc = (req.query.utc !== undefined && !!Number(req.query.utc) && +req.query.utc > -11 && +req.query.utc < 13)?(+req.query.utc):(0);
         stringForFiltering += ` AND (UNIX_TIMESTAMP(${modify}execution_date) - UNIX_TIMESTAMP('${week}') < ${604800 - utc*60*60}) AND (UNIX_TIMESTAMP(${modify}execution_date) - UNIX_TIMESTAMP('${week}') > ${0 - utc*60*60})`
@@ -46,6 +49,7 @@ const filteringEvents = (req, modify) => {
     
     stringForFiltering += (type !== -1)?(` AND ${modify}type = '${type}'`):('');
     stringForFiltering += (search !== -1)?(` AND (${modify}title LIKE "%${search}%" OR ${modify}description LIKE "%${search}%")`):('');
+    stringForFiltering += (category !== -1)?(` AND ${modify}category = '${category}'`):('');
 
     stringForFiltering += ` ORDER BY ${modify}execution_date`;
 
@@ -986,6 +990,60 @@ module.exports = class Event {
                                     database.query('SELECT events.id, events.calendar_id, events.user_id, users.login, events.title,' +
                                         ' events.description, events.type, events.category, events.execution_date, events.duration FROM' +
                                         ' events LEFT OUTER JOIN users ON events.user_id = users.id WHERE events.id = ?', eventId, (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'});
+                                        }
+                                        else {
+                                            return res.status(200).json(result);
+                                        }
+                                    })
+                                }
+                                else {
+                                    return res.status(403).json();
+                                }
+                            }
+                        })
+                    }
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'});
+                }
+            }
+        })
+    }
+    getAuthorByCurrentEvent(res, eventId, userId) {
+        database.query('SELECT calendars.user_id AS id FROM events LEFT OUTER JOIN calendars ON events.calendar_id = calendars.id' + 
+            ' WHERE events.id = ?', eventId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'});
+            }
+            else {
+                if(result.length !== 0) {
+                    if(+result[0].id === +userId) {
+                        database.query('SELECT users.id, users.login FROM events' +
+                            ' LEFT OUTER JOIN users ON users.id = events.user_id' + 
+                            ' WHERE events.id = ?', eventId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'});
+                            }
+                            else {
+                                return res.status(200).json(result);
+                            }
+                        })
+                    }
+                    else {
+                        database.query('SELECT users_calendars.user_id FROM events' +
+                            ' LEFT OUTER JOIN calendars ON events.calendar_id = calendars.id' +
+                            ' LEFT OUTER JOIN users_calendars ON calendars.id = users_calendars.calendar_id' +
+                            ' WHERE events.id = ? AND users_calendars.user_id = ?', [eventId, userId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'});
+                            }
+                            else {
+                                if(result.length !== 0) {
+                                    database.query('SELECT users.id, users.login FROM events' +
+                                        ' LEFT OUTER JOIN users ON users.id = events.user_id' + 
+                                        ' WHERE events.id = ?', eventId, (err, result) => {
                                         if(err) {
                                             return res.status(400).json( {comment: 'Not found'});
                                         }
