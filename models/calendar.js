@@ -98,7 +98,7 @@ module.exports = class Calendar {
                                         });
                                     }
                                     else {
-                                        return res.status(403).json(); 
+                                        return res.status(403).json();
                                     }
                                 }
                                 else {
@@ -142,12 +142,15 @@ module.exports = class Calendar {
         });
     }
     getAllUsersSubsedToCurrentCalendar(res, calendarId, currentUserId) {
-        database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
+        database.query('SELECT calendars.user_id, users.login FROM calendars LEFT OUTER JOIN users ON calendars.user_id = users.id' +
+            ' WHERE calendars.id = ?', calendarId, (err, result) => {
             if(err) {
                 return res.status(400).json( {comment: 'Not found'}); 
             }
             else {
                 if(result.length !== 0) {
+                    let ownerId = +result[0].user_id;
+                    let ownerLogin = result[0].login;
                     if(+result[0].user_id === +currentUserId) {
                         database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
                             ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
@@ -161,7 +164,84 @@ module.exports = class Calendar {
                         })
                     }
                     else {
-                        return res.status(403).json();
+                        database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [currentUserId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                if(result.length === 0  || result[0].role === 'user') {
+                                    return res.status(403).json(); 
+                                }
+                                else {
+                                    database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
+                                        ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                                        ' WHERE calendar_id = ? AND users.id != ?', [calendarId, currentUserId], (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            result.push({user_id: ownerId, role: 'owner', login: ownerLogin});
+                                            return res.status(200).json(result);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+                else {
+                    return res.status(400).json( {comment: 'Not found'}); 
+                }
+            }
+        });
+    }
+    getAllUsersAssociatedWithTheCalendar(res, calendarId, currentUserId) {
+        database.query('SELECT calendars.user_id, users.login FROM calendars LEFT OUTER JOIN users ON calendars.user_id = users.id' +
+            ' WHERE calendars.id = ?', calendarId, (err, result) => {
+            if(err) {
+                return res.status(400).json( {comment: 'Not found'}); 
+            }
+            else {
+                if(result.length !== 0) {
+                    let ownerId = +result[0].user_id;
+                    let ownerLogin = result[0].login;
+                    if(+result[0].user_id === +currentUserId) {
+                        database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
+                            ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                            ' WHERE calendar_id = ?', calendarId, (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                result.push({user_id: ownerId, role: 'owner', login: ownerLogin});
+                                return res.status(200).json(result);
+                            }
+                        })
+                    }
+                    else {
+                        database.query('SELECT role FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [currentUserId, calendarId], (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {comment: 'Not found'}); 
+                            }
+                            else {
+                                if(result.length === 0  || result[0].role === 'user') {
+                                    return res.status(403).json(); 
+                                }
+                                else {
+                                    database.query('SELECT users_calendars.user_id, users_calendars.role, users.login FROM users_calendars' +
+                                        ' LEFT OUTER JOIN users ON users_calendars.user_id = users.id' +
+                                        ' WHERE calendar_id = ?', calendarId, (err, result) => {
+                                        if(err) {
+                                            return res.status(400).json( {comment: 'Not found'}); 
+                                        }
+                                        else {
+                                            result.push({user_id: ownerId, role: 'owner', login: ownerLogin});
+                                            return res.status(200).json(result);
+                                        }
+                                    });
+                                }
+                            }
+                        });
                     }
                 }
                 else {

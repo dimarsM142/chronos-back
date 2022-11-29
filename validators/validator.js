@@ -91,7 +91,8 @@ function eventCreateValidation(data) {
         executionDate: Joi.string().min(("2022-04-22 10:34:23").length).max(("2022-04-22 10:34:23").length + 4).example("2022-04-22 10:34:23").required(),
         type: Joi.string().valid('arrangement', 'reminder', 'task').required(),
         duration: Joi.number().min(5*60).max(12*60*60),
-        utc: Joi.number().min(-11).max(+13.45).required()
+        utc: Joi.number().min(-11).max(+13.45).required(),
+        subscribers: Joi.string().example('')
     })
 
     return schema.validate(data);
@@ -104,7 +105,8 @@ function eventChangeValidation(data) {
         executionDate: Joi.string().min(("2022-04-22 10:34:23").length).max(("2022-04-22 10:34:23").length + 4).example("2022-04-22 10:34:23"),
         type: Joi.string().valid('arrangement', 'reminder', 'task'),
         duration: Joi.number().min(5*60).max(12*60*60),
-        utc: Joi.number().min(-11).max(+13.45)
+        utc: Joi.number().min(-11).max(+13.45),
+        subscribers: Joi.string().example('')
     })
 
     return schema.validate(data);

@@ -64,6 +64,14 @@ const getAllUsersSubsedToCurrentCalendar = (req, res) => {
     calendar.getAllUsersSubsedToCurrentCalendar(res, calendarId, payload.userId);
 }
 
+const getAllUsersAssociatedWithTheCalendar = (req, res) => {
+    const { calendarId } = req.params;
+    const token = req.get('Authorization')
+    const payload = jwt.verify(token, secret);
+    let calendar = new Calendar();
+    calendar.getAllUsersAssociatedWithTheCalendar(res, calendarId, payload.userId);
+}
+
 const unsubscribeUserToCurrentUserCalendar = (req, res) => {
     const { calendarId, userId } = req.params;
     const token = req.get('Authorization')
@@ -107,6 +115,7 @@ module.exports = {
     subscribeUserToCurrentUserCalendar,
     changeSubscribedUserToCurrentUserCalendar,
     getAllUsersSubsedToCurrentCalendar,
+    getAllUsersAssociatedWithTheCalendar,
     unsubscribeUserToCurrentUserCalendar,
     changeCalendarByCurrentUser,
     getCurrentUserRoleInCurrentCalendar,

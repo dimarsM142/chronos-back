@@ -22,26 +22,25 @@ const createRemindFunction = (eventId, eventExecDate, eventType) => {
                 
             }*/
             shedule.scheduleJob(`${eventId}`, datesForArrangement[0], (err) => {
-                database.query('SELECT events.title, calendars.title AS calendarTitle, calendars.id AS calendarId, users.email FROM events' +
+                database.query('SELECT events.title, calendars.title AS calendarTitle, calendars.id AS calendarId, events.user_id, users.email FROM events' +
                     ' LEFT OUTER JOIN calendars ON calendars.id = events.calendar_id ' +
-                    ' LEFT OUTER JOIN users ON users.id = calendars.user_id' + 
+                    ' LEFT OUTER JOIN users ON users.id = events.user_id' + 
                     ' WHERE events.id = ?', eventId, (err, result) => {
                     if(err) {
                         return res.status(400).json( {comment: 'Not found'});
                     }
                     else {
-                        let calendarId = result[0].calendarId;
-                        let ownerEmail = result[0].email;
                         let calendarTitle = result[0].calendarTitle;
                         let eventTitle = result[0].title;
+                        let eventOwnerEmail = result[0].email;
                         database.query('UPDATE events SET ? WHERE id = ?', [{notification: 1}, eventId], (err, result) => {
                             if(err) {
                                 return res.status(400).json( {comment: 'Not found'});
                             }
                             else {
-                                database.query('SELECT users.email FROM users_calendars' +
-                                    ' LEFT OUTER JOIN users ON users.id = users_calendars.user_id' +
-                                    ' WHERE calendar_id = ?', calendarId, (err, result) => {
+                                database.query('SELECT users.email FROM invitations' +
+                                    ' LEFT OUTER JOIN users ON invitations.user_id = users.id' +
+                                    ' WHERE invitations.arrangement_id = ?', eventId, (err, result) => {
                                     if(err) {
                                         return res.status(400).json( {comment: 'Not found'});
                                     }
@@ -50,7 +49,7 @@ const createRemindFunction = (eventId, eventExecDate, eventType) => {
                                         for(let i = 0; i < result.length; i++) {
                                             emailArray.push(result[i].email);
                                         }
-                                        emailArray.push(ownerEmail);
+                                        emailArray.push(eventOwnerEmail);
                                         sendRemindByArrangement(emailArray, eventTitle, calendarTitle);
                                     }
                                 })

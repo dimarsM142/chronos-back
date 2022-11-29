@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 const mailer = message => {
     transporter.sendMail(message, (err, info) => {
         if(err) {
-            console.log('Some problem with send mail!')
+            console.log(err);
         }
     });
 }
@@ -22,100 +22,11 @@ function sendResetPsw(user, token) {
         to: `${user[0]['email']}`,
         subject: 'Password recovery',
         html:`
-        <html>
-            <head>
-                <style>
-                    body { 
-                        font-family: 'Didact Gothic', sans-serif;
-                    }
-                    p {
-                        padding: 0px;
-                        margin: 0px;
-                        
-                    }
-                    h1 {
-                        text-align: center;
-                        font-size: 36px;
-                        font-family: 'Comfortaa', cursive;
-                        color: green;
-                    }
-                    img {
-                        margin:auto;
-                        width: 100px;
-                        height: 100px;
-                    }
-                    .header {
-                        display: grid;
-                        justify-content: center;
-                        row-gap: 20px;
-                    }
-                    h2 {
-                        font-weight: 700;
-                        font-size: 20px;
-                        opacity: 0.6;
-                        margin-top: 30px;
-                        margin-bottom: 30px;   
-                    }
-                    .text-content {
-                        opacity: 0.6;
-                        padding: 10px 20px;
-                        font-size: 18px;
-                        margin-bottom: 20px;
-                    }
-                    .link {
-                        margin: auto;
-                        text-align: center;
-                        margin-bottom: 20px;
-                    }
-                    .link a {
-                        text-transform: none;
-                        text-decoration: none;
-                        color: white;
-                        background-color: green;
-                        font-family: 'Comfortaa', cursive;
-                        text-transform: uppercase;
-                        font-size: 30px;
-                        padding: 5px 30px;
-                        transition: 0.4s;
-                        
-                    }
-                    .link a:hover{
-                        background-color: rgb(23, 88, 3);
-                    }
-
-
-
-                    .link a:active{
-                        background-color: rgb(0, 150, 12);
-                        color: #ffffff;
-                        box-shadow: 10px 15px 15px rgb(112, 112, 112);
-                    }
-                    .last-part {
-                        text-align: right;
-                        opacity: 0.7;
-                        font-size: 24px;
-                        margin-top: 40px;
-                        color: green;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>Chronos</h1>
-                    <img className="logo" src='https://www.pngkey.com/png/full/18-180664_calendar-clock-comments-time-and-date-icon-png.png' alt='logo'/>
-                </div>
-                <div>
-
-                    <h2>Account password reminder</h2>
-                    <p class="text-content">You must follow the link in order to proceed with the password change process. After 5 minutes, the link will become invalid.</i>
-
-                    <div class="link">
-                        <a href="https://chron0s.herokuapp.com/forgot-password/${token}">Reset Password</a>
-                    </div>
-                    <p class="last-part">Enjoy, the rest of your day!</p>
-                </div>
-            </body>
-        </html>
+        <h2>Account password reminder</h2>
+        <i>You must follow the link in order to proceed with the password change process.</i>
+        <a href="url">http://localhost:3000/forgot-password/${token}</a>
+        <p>After 5 minutes, the link will become invalid.</p>
+        <br><br><p>This letter does not require a response.</p>
         `
     }
     mailer(message);
@@ -207,7 +118,7 @@ function deleteEventNtfc(sendEventArray, calendarTitle, eventTitle, eventType) {
         subject: 'Prompt',
         html:`
         <h2>Notification</h2>
-        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar "${calendarTitle}" was deleted</p>
+        <p>${eventType[0].toUpperCase() + eventType.slice(1)} "${eventTitle}" in calendar "${calendarTitle}" was canceled</p>
         <br><br><p>This letter does not require a response.</p>
         `
     }
