@@ -1,4 +1,4 @@
-USE heroku_58afbdcbb5cf3b1;
+USE chronos;
 
 DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS invitations;
@@ -8,23 +8,24 @@ DROP TABLE IF EXISTS users_calendars;
 DROP TABLE IF EXISTS calendars;
 DROP TABLE IF EXISTS users;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT(8) UNSIGNED AUTO_INCREMENT NOT NULL,
     PRIMARY KEY (id),
-    login VARCHAR(255) NOT NULL UNIQUE,
+    login VARCHAR(30) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(60) NOT NULL,
     picture VARCHAR(255) DEFAULT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE
+    email VARCHAR(255) NOT NULL UNIQUE,
+    picture VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS calendars (
     id INT(8) UNSIGNED AUTO_INCREMENT NOT NULL,
     PRIMARY KEY (id),
     user_id INT(8) UNSIGNED NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    description TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+    description TEXT
 );
 
 CREATE TABLE IF NOT EXISTS events (
@@ -37,9 +38,10 @@ CREATE TABLE IF NOT EXISTS events (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     type ENUM('arrangement', 'reminder', 'task') NOT NULL,
-    category ENUM('home', 'work', 'sport') NOT NULL,
+    category ENUM('home', 'work') NOT NULL,
     execution_date DATETIME,
     duration INT(8) DEFAULT 1800,
+    color ENUM('red', 'orange', 'green', 'blue', 'darkblue', 'purple') NOT NULL,
     notification INT(1) DEFAULT 0 NOT NULL
 );
 

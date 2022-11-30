@@ -28,9 +28,9 @@ const createEventInCurrentCalendar = (req, res) => {
         }
     }
     const { calendarId } = req.params;
-    const token = req.get('Authorization')
+    const token = req.get('Authorization');
     const payload = jwt.verify(token, secret);
-    let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.category, req.body.duration);
+    let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.category, req.body.duration, req.body.color);
     event.createEvent(res, calendarId, payload.userId, +req.body.utc, (req.body.subscribers !== undefined)?((req.body.subscribers.length === 0)?([]):(req.body.subscribers.split(','))):(req.body.subscribers));
 }
 
@@ -48,9 +48,9 @@ const changeEventInCurrentCalendar = (req, res) => {
         }
     }*/
     const { calendarId, eventId } = req.params;
-    const token = req.get('Authorization')
+    const token = req.get('Authorization');
     const payload = jwt.verify(token, secret);
-    let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.category, req.body.duration);
+    let event = new Event(req.body.title, req.body.description, req.body.executionDate, req.body.type, req.body.category, req.body.duration, req.body.color);
     event.changeEvent(res, calendarId, eventId, payload.userId, +req.body.utc, (req.body.subscribers !== undefined)?((req.body.subscribers.length === 0)?([]):(req.body.subscribers.split(','))):(req.body.subscribers));
 }
 
@@ -60,14 +60,6 @@ const getCurrentEventInfo = (req, res) => {
     const payload = jwt.verify(token, secret);
     let event = new Event();
     event.getCurrentEventInfo(res, eventId, payload.userId);
-}
-
-const getAuthorByCurrentEvent = (req, res) => {
-    const { eventId } = req.params;
-    const token = req.get('Authorization');
-    const payload = jwt.verify(token, secret);
-    let event = new Event();
-    event.getAuthorByCurrentEvent(res, eventId, payload.userId);
 }
 
 const getAllUsersInvitedToArrangement = (req, res) => {
@@ -91,7 +83,6 @@ module.exports = {
     createEventInCurrentCalendar,
     changeEventInCurrentCalendar,
     getCurrentEventInfo,
-    getAuthorByCurrentEvent,
     getAllUsersInvitedToArrangement,
     deleteEventFromCurrentCalendar
 }

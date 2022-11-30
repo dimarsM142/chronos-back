@@ -36,12 +36,12 @@ const filteringEvents = (req, modify) => {
     //фільтр category; використовувати наступним чином: category=home
     let category = (req.query.category !== undefined && (req.query.category === 'home' || req.query.category === 'work' || req.query.category === 'sport'))?(req.query.category):(-1);
 
+    let utc = (req.query.utc !== undefined && !!Number(req.query.utc) && +req.query.utc > -11 && +req.query.utc < 13)?(+req.query.utc):(0);
     if(week !== -1) {
-        let utc = (req.query.utc !== undefined && !!Number(req.query.utc) && +req.query.utc > -11 && +req.query.utc < 13)?(+req.query.utc):(0);
         stringForFiltering += ` AND (UNIX_TIMESTAMP(${modify}execution_date) - UNIX_TIMESTAMP('${week}') < ${604800 - utc*60*60}) AND (UNIX_TIMESTAMP(${modify}execution_date) - UNIX_TIMESTAMP('${week}') > ${0 - utc*60*60})`
     }
     else if(month !== -1) {
-        stringForFiltering += ` AND ${modify}execution_date LIKE '${month}%'`;
+        stringForFiltering += ` AND MONTH( FROM_UNIXTIME( UNIX_TIMESTAMP(events.execution_date) - ${utc*60*60} ) ) = ${+(month.slice(5,7))}`;
     }
     else if(year !== -1) {
         stringForFiltering += ` AND ${modify}execution_date LIKE '${year}%'`;
@@ -125,12 +125,16 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                                         }
                                         console.log(emailArray);
                                         if(!checkRework) {
-                                            createEventNtfc(emailArray, calendarTitle, event.type);
+                                            if(emailArray.length !== 0) {
+                                                createEventNtfc(emailArray, calendarTitle, event.type);
+                                            }
                                             createRemindFunction(arrangement_id, event.execution_date.replace(' ', 'T'), event.type);
                                             return res.status(201).json( {comment: 'Event succesfully created!'});
                                         }
                                         else {
-                                            changeEventNtfc(emailArray, calendarTitle, oldEvent, event);
+                                            if(emailArray.length !== 0) {
+                                                changeEventNtfc(emailArray, calendarTitle, oldEvent, event);
+                                            }
                                             changeRemindFunction(arrangement_id, event.execution_date.toISOString().replace(' ', 'T'), event.type)
                                             return res.status(201).json( {comment: 'Event succesfully changed!'});
                                         }
@@ -248,13 +252,14 @@ const changeInvitations = (mailSubscribersToInviteArr, mailSubscribersToDeleteAr
 }
 
 module.exports = class Event {
-    constructor(title, description, execution_date, type, category, duration) {
+    constructor(title, description, execution_date, type, category, duration, color) {
         this.title = title;
         this.description = description;
         this.execution_date = execution_date;
         this.type = type;
         this.category = category;
         this.duration = duration;
+        this.color = color;
     }
     getAllEventsFromCurrentCalendar(req, res, calendarId, userId) {
         database.query('SELECT user_id FROM calendars WHERE id = ?', calendarId, (err, result) => {
@@ -264,7 +269,9 @@ module.exports = class Event {
             else {
                 if(result.length !== 0) {
                     if(+result[0].user_id === +userId) {
-                        database.query('SELECT id, title, description, execution_date, type, category, duration FROM events WHERE calendar_id = ?' + filteringEvents(req, ''), calendarId, (err, result) => {
+                        database.query('SELECT events.id, users.login, events.title, events.description, events.execution_date, events.type,' +
+                            ' events.category, events.duration, events.color FROM events LEFT OUTER JOIN users ON events.user_id = users.id' +
+                            ' WHERE calendar_id = ?' + filteringEvents(req, 'events.'), calendarId, (err, result) => {
                             if(err) {
                                 return res.status(400).json( {comment: 'Not found'}); 
                             }
@@ -283,15 +290,19 @@ module.exports = class Event {
                                     return res.status(403).json(); 
                                 }
                                 else {
-                                    database.query('SELECT events.id, events.title, events.description, events.execution_date, events.type, events.category, events.duration FROM invitations' +
-                                    ' LEFT OUTER JOIN events ON invitations.arrangement_id = events.id' +
-                                    ' WHERE invitations.user_id = ?' + filteringEvents(req, 'events.'), userId, (err, result) => {
+                                    database.query('SELECT events.id, users.login, events.title, events.description, events.execution_date,' +
+                                        ' events.type, events.category, events.duration, events.color FROM invitations' +
+                                        ' LEFT OUTER JOIN events ON invitations.arrangement_id = events.id' +
+                                        ' LEFT OUTER JOIN users ON events.user_id = users.id' +
+                                        ' WHERE invitations.user_id = ?' + filteringEvents(req, 'events.'), userId, (err, result) => {
                                         if(err) {
                                             return res.status(400).json( {comment: 'Not found'}); 
                                         }
                                         else {
                                             let tempResult = result.slice(0);
-                                            database.query('SELECT id, title, description, execution_date, type, category, duration FROM events WHERE calendar_id = ? AND (type = "reminder" OR type = "task")' + filteringEvents(req, ''), calendarId, (err, result) => {
+                                            database.query('SELECT events.id, users.login, events.title, events.description, events.execution_date, events.type,' +
+                                                ' events.category, events.duration, events.color FROM events LEFT OUTER JOIN users ON events.user_id = users.id' +
+                                                ' WHERE calendar_id = ? AND (type = "reminder" OR type = "task")' + filteringEvents(req, 'events.'), calendarId, (err, result) => {
                                                 if(err) {
                                                     return res.status(400).json( {comment: 'Not found'}); 
                                                 }
@@ -324,7 +335,8 @@ module.exports = class Event {
             type: this.type,
             category: this.category,
             duration: this.duration,
-            user_id: userId
+            user_id: userId,
+            color: this.color
         }
 
         event.execution_date = changeDateToUTC(utc, this.execution_date);
@@ -359,7 +371,9 @@ module.exports = class Event {
                                             for(let i = 0; i < result.length; i++) {
                                                 emailArray.push(result[i].email);
                                             }
-                                            createEventNtfc(emailArray, calendarTitle, event.type);
+                                            if(emailArray.length !== 0) {
+                                                createEventNtfc(emailArray, calendarTitle, event.type);
+                                            }
                                             createRemindFunction(insertId, event.execution_date.replace(' ', 'T'), event.type);
                                             return res.status(201).json( {comment: 'Event succesfully created!'});
                                         }
@@ -457,7 +471,8 @@ module.exports = class Event {
             execution_date: this.execution_date,
             type: this.type,
             category: this.category,
-            duration: this.duration
+            duration: this.duration,
+            color: this.color
         }
 
         if(event.execution_date !== undefined) {
@@ -497,6 +512,7 @@ module.exports = class Event {
                                     (event.type === undefined) && (delete event.type);
                                     (event.category === undefined) && (delete event.category);
                                     (event.duration === undefined) && (delete event.duration);
+                                    (event.color === undefined) && (delete event.color);
                                     if(event.duration && event.type && event.type !== "arrangement") {
                                         event.duration = 0;
                                     }
@@ -641,7 +657,9 @@ module.exports = class Event {
                                                                                     if(oldEvent.title !== newEvent.title || oldEvent.description !== newEvent.description ||
                                                                                         (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                                         oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
-                                                                                        changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                                        if(emailArray.length !== 0) {
+                                                                                            changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                                        }
                                                                                         changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                                     }
                                                                                     
@@ -697,7 +715,9 @@ module.exports = class Event {
                                                                 if(oldEvent.title !== newEvent.title || oldEvent.description !== newEvent.description ||
                                                                     (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                     oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category) {
-                                                                    changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                    if(emailArray.length !== 0) {
+                                                                        changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                    }
                                                                     changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                 }
                                                                 
@@ -726,6 +746,7 @@ module.exports = class Event {
                                                 (event.type === undefined) && (delete event.type);
                                                 (event.category === undefined) && (delete event.category);
                                                 (event.duration === undefined) && (delete event.duration);
+                                                (event.color === undefined) && (delete event.color);
                                                 if(event.duration && event.type && event.type !== "arrangement") {
                                                     event.duration = 0;
                                                 }
@@ -967,7 +988,7 @@ module.exports = class Event {
                 if(result.length !== 0) {
                     if(+result[0].id === +userId) {
                         database.query('SELECT events.id, events.calendar_id, events.user_id, users.login, events.title,' +
-                            ' events.description, events.type, events.category, events.execution_date, events.duration FROM' +
+                            ' events.description, events.type, events.category, events.execution_date, events.duration, events.color FROM' +
                             ' events LEFT OUTER JOIN users ON events.user_id = users.id WHERE events.id = ?', eventId, (err, result) => {
                             if(err) {
                                 return res.status(400).json( {comment: 'Not found'});
@@ -988,62 +1009,8 @@ module.exports = class Event {
                             else {
                                 if(result.length !== 0) {
                                     database.query('SELECT events.id, events.calendar_id, events.user_id, users.login, events.title,' +
-                                        ' events.description, events.type, events.category, events.execution_date, events.duration FROM' +
+                                        ' events.description, events.type, events.category, events.execution_date, events.duration, events.color FROM' +
                                         ' events LEFT OUTER JOIN users ON events.user_id = users.id WHERE events.id = ?', eventId, (err, result) => {
-                                        if(err) {
-                                            return res.status(400).json( {comment: 'Not found'});
-                                        }
-                                        else {
-                                            return res.status(200).json(result);
-                                        }
-                                    })
-                                }
-                                else {
-                                    return res.status(403).json();
-                                }
-                            }
-                        })
-                    }
-                }
-                else {
-                    return res.status(400).json( {comment: 'Not found'});
-                }
-            }
-        })
-    }
-    getAuthorByCurrentEvent(res, eventId, userId) {
-        database.query('SELECT calendars.user_id AS id FROM events LEFT OUTER JOIN calendars ON events.calendar_id = calendars.id' + 
-            ' WHERE events.id = ?', eventId, (err, result) => {
-            if(err) {
-                return res.status(400).json( {comment: 'Not found'});
-            }
-            else {
-                if(result.length !== 0) {
-                    if(+result[0].id === +userId) {
-                        database.query('SELECT users.id, users.login FROM events' +
-                            ' LEFT OUTER JOIN users ON users.id = events.user_id' + 
-                            ' WHERE events.id = ?', eventId, (err, result) => {
-                            if(err) {
-                                return res.status(400).json( {comment: 'Not found'});
-                            }
-                            else {
-                                return res.status(200).json(result);
-                            }
-                        })
-                    }
-                    else {
-                        database.query('SELECT users_calendars.user_id FROM events' +
-                            ' LEFT OUTER JOIN calendars ON events.calendar_id = calendars.id' +
-                            ' LEFT OUTER JOIN users_calendars ON calendars.id = users_calendars.calendar_id' +
-                            ' WHERE events.id = ? AND users_calendars.user_id = ?', [eventId, userId], (err, result) => {
-                            if(err) {
-                                return res.status(400).json( {comment: 'Not found'});
-                            }
-                            else {
-                                if(result.length !== 0) {
-                                    database.query('SELECT users.id, users.login FROM events' +
-                                        ' LEFT OUTER JOIN users ON users.id = events.user_id' + 
-                                        ' WHERE events.id = ?', eventId, (err, result) => {
                                         if(err) {
                                             return res.status(400).json( {comment: 'Not found'});
                                         }
@@ -1150,7 +1117,9 @@ module.exports = class Event {
                                                     for(let i = 0; i < result.length; i++) {
                                                         emailArray.push(result[i].email);
                                                     }
-                                                    deleteEventNtfc(emailArray, calendarTitle, eventTitle, eventType);
+                                                    if(emailArray.length !== 0) {
+                                                        deleteEventNtfc(emailArray, calendarTitle, eventTitle, eventType);
+                                                    }
                                                     deleteRemindFunction(eventId);
                                                     return res.status(204).json();
                                                 }
