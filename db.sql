@@ -1,4 +1,4 @@
-USE chronos;
+USE heroku_58afbdcbb5cf3b1;
 
 DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS invitations;
@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(60) NOT NULL,
     picture VARCHAR(255) DEFAULT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    picture VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS calendars (
