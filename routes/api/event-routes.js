@@ -15,7 +15,7 @@ router.post('/calendars/:calendarId/events', checkTokenMiddleware, createEventIn
 router.patch('/calendars/:calendarId/events/:eventId', checkTokenMiddleware, changeEventInCurrentCalendar);           //Змінити дані івенту в поточному календарі
 router.get('/events/:eventId', checkTokenMiddleware, getCurrentEventInfo);                                            //Отримати інформацію щодо поточного івенту
 router.get('/events/:eventId/author', checkTokenMiddleware, getAuthorByCurrentEvent);                                 //Отримати автора поточного івенту
-router.get('/events/:calendarId/events/:arrangementId', checkTokenMiddleware, getAllUsersInvitedToArrangement);       //Отримати всіх користувачів, які запрошені на arrangement
+router.get('/events/:calendarId/events/:eventId', checkTokenMiddleware, getAllUsersInvitedToArrangement);       //Отримати всіх користувачів, які запрошені на arrangement
 router.delete('/calendars/:calendarId/events/:eventId', checkTokenMiddleware, deleteEventFromCurrentCalendar);        //Видалити івент з поточного календаря
 
 module.exports = router;
