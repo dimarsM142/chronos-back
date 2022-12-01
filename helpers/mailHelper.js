@@ -766,6 +766,7 @@ function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //
                 .one-event{
                     border: 3px solid green;
                     padding: 20px;
+                    margin-bottom: 20px;
                 }
                 .one-event .date{
                     text-align: right;
