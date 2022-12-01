@@ -110,7 +110,7 @@ function sendResetPsw(user, token) {
                     <p class="text-content">You must follow the link in order to proceed with the password change process. After 5 minutes, the link will become invalid.</i>
 
                     <div class="link">
-                        <a href="https://chron0s.herokuapp.com/forgot-password${token}">Reset Password</a>
+                        <a href="https://chron0s.herokuapp.com/forgot-password/${token}">Reset Password</a>
                     </div>
                     <p class="last-part">Enjoy, the rest of your day!</p>
                 </div>
