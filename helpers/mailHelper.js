@@ -813,9 +813,7 @@ function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //
                     <p class="type">${newEvent.type}</p>
                     <p class="title">${newEvent.title}</p> 
                     <p class="desc">${newEvent.description}</p>
-                   
-                    <p class="duration">${(newEvent.type !== 'arrangement')?(''):`Lasts ${(newEvent.duration / 3600)} hours`}</p>
-                    
+                    ${(newEvent.type !== 'arrangement')?(''):`<p class="duration">Lasts ${(newEvent.duration / 3600)} hours</p>`}                    
                 </div>
                 <div class="link">
                     <a href="https://chron0s.herokuapp.com">Go into website!</a>
