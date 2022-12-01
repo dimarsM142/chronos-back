@@ -27,7 +27,7 @@ function sendResetPsw(user, token) {
                 <style>
                     body { 
                         font-family: 'Didact Gothic', sans-serif;
-                        margin 0px 40px;
+                        margin: 0px 40px;
                     }
                     p {
                         padding: 0px;
@@ -230,7 +230,7 @@ function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
                 <div>
                     <h2>Task notification</h2>
                     <p class="text-calendarTitle">${calendarTitle}</p>
-                    <p class="text-content">You have <span class="text-eventTitle">${eventTitle}</span> to complete. Deadline - tomorrow! For more details, see this calendar on the website.</p>
+                    <p class="text-content">You have event - <span class="text-eventTitle">${eventTitle}</span> to complete. Deadline - tomorrow! For more details, see this calendar on the website.</p>
                         <div class="link">
                             <a href="https://chron0s.herokuapp.com">Go into website!</a>
                         </div>
@@ -484,7 +484,7 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
                 <div>
                     <h2>Reminder notification</h2>
                     <p class="text-calendarTitle">${calendarTitle}</p>
-                    <p class="text-content">We remind you that you should have done <span class="text-eventTitle">${eventTitle}</span>. For more details, see this calendar on the website.</p>
+                    <p class="text-content">We remind you that you should have done an event - <span class="text-eventTitle">${eventTitle}</span>. For more details, see this calendar on the website.</p>
                         <div class="link">
                             <a href="https://chron0s.herokuapp.com">Go into website!</a>
                         </div>
@@ -493,11 +493,6 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
                 </div>
             </body>
         </html>
-        `,
-        html:`
-        <h2>Reminder</h2>
-        <p>According to "${calendarTitle}" calendar, need to take "${eventTitle}" now</p>
-        <br><br><p>This letter does not require a response.</p>
         `
     }
     mailer(message);
