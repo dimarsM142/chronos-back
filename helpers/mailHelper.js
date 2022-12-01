@@ -814,7 +814,7 @@ function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //
                     <p class="title">${newEvent.title}</p> 
                     <p class="desc">${newEvent.description}</p>
                    
-                    <p class="duration">Lasts ${(newEvent.type !== 'arrangement')?(''):(newEvent.duration / 3600)}} hours</p>
+                    <p class="duration">${(newEvent.type !== 'arrangement')?(''):`Lasts ${(newEvent.duration / 3600)} hours`}</p>
                     
                 </div>
                 <div class="link">
