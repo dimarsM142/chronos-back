@@ -381,6 +381,101 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
         subject: 'Reminder notification',
         html:`
         <html>
+            <head>
+                <style>
+                    body { 
+                        font-family: 'Didact Gothic', sans-serif;
+                        margin: 0px 40px;
+                    }
+                    p {
+                        padding: 0px;
+                        margin: 0px;
+                        
+                    }
+                    h1 {
+                        text-align: center;
+                        font-size: 36px;
+                        font-family: 'Comfortaa', cursive;
+                        color: green;
+                    }
+                    img {
+                        margin:auto;
+                        width: 100px;
+                        height: 100px;
+                    }
+                    .header {
+                        display: grid;
+                        justify-content: center;
+                        row-gap: 20px;
+                    }
+                    h2 {
+                        font-weight: 700;
+                        font-size: 20px;
+                        opacity: 0.6;
+                        margin-top: 30px;
+                        margin-bottom: 30px;   
+                    }
+                    .text-content {
+                        opacity: 0.6;
+                        padding: 10px 20px;
+                        font-size: 18px;
+                        margin-bottom: 20px;
+                    }
+                    .link {
+                        margin: auto;
+                        text-align: center;
+                        margin-bottom: 20px;
+                    }
+                    .link a {
+                        text-transform: none;
+                        text-decoration: none;
+                        color: white;
+                        background-color: green;
+                        font-family: 'Comfortaa', cursive;
+                        text-transform: uppercase;
+                        font-size: 30px;
+                        padding: 5px 30px;
+                        transition: 0.4s;
+                        
+                    }
+                    .link a:hover{
+                        background-color: rgb(23, 88, 3);
+                    }
+
+
+
+                    .link a:active{
+                        background-color: rgb(0, 150, 12);
+                        color: #ffffff;
+                        box-shadow: 10px 15px 15px rgb(112, 112, 112);
+                    }
+                    .last-part {
+                        text-align: right;
+                        opacity: 0.7;
+                        font-size: 24px;
+                        margin-top: 40px;
+                        color: green;
+                    }
+                    .text-calendarTitle{
+                        text-align: center;
+                        margin-bottom: 20px;
+                        text-transform: uppercase;
+                        color: green;
+                        font-size: 30px;
+                        font-weight: 700;
+                        font-family: 'Comfortaa', cursive;
+                    }
+                    .text-eventTitle{
+                        opacity: 1;
+                        color: black;
+                        font-size: 24px;
+                        color: green;
+                        font-style: italic;
+                    
+                    }
+                    
+                </style>
+            </head>
             <body>
                 <div class="header">
                     <h1>Chronos</h1>
