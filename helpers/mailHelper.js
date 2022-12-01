@@ -202,9 +202,16 @@ function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
                         margin-top: 40px;
                         color: green;
                     }
-                    .text-calendarTitle{
+                    .text-calendarTitle {
                         text-align: center;
                         margin-bottom: 20px;
+                    }
+                    .text-calendarTitle span:first-child{
+                        margin-right: 10px;
+                        opacity: 0.3;
+                        font-size: 20px;
+                    }
+                    .text-calendarTitle span:last-child{
                         text-transform: uppercase;
                         color: green;
                         font-size: 30px;
@@ -229,7 +236,7 @@ function sendRemindByTask(sendEventArray, eventTitle, calendarTitle) {
                 </div>
                 <div>
                     <h2>Task notification</h2>
-                    <p class="text-calendarTitle">${calendarTitle}</p>
+                    <p class="text-calendarTitle"><span>calendar</span><span>${calendarTitle}</span></p>
                     <p class="text-content">You have event - <span class="text-eventTitle">${eventTitle}</span> to complete. Deadline - tomorrow! For more details, see this calendar on the website.</p>
                         <div class="link">
                             <a href="https://chron0s.herokuapp.com">Go into website!</a>
@@ -326,9 +333,16 @@ function sendRemindByArrangement(sendEventArray, eventTitle, calendarTitle) {
                         margin-top: 40px;
                         color: green;
                     }
-                    .text-calendarTitle{
+                    .text-calendarTitle {
                         text-align: center;
                         margin-bottom: 20px;
+                    }
+                    .text-calendarTitle span:first-child{
+                        margin-right: 10px;
+                        opacity: 0.3;
+                        font-size: 20px;
+                    }
+                    .text-calendarTitle span:last-child{
                         text-transform: uppercase;
                         color: green;
                         font-size: 30px;
@@ -353,7 +367,7 @@ function sendRemindByArrangement(sendEventArray, eventTitle, calendarTitle) {
                 </div>
                 <div>
                     <h2>Arrangament notification</h2>
-                    <p class="text-calendarTitle">${calendarTitle}</p>
+                    <p class="text-calendarTitle"><span>calendar</span><span>${calendarTitle}</span></p>
                     <p class="text-content">In 1 hour, an event <span class="text-eventTitle">${eventTitle}</span> will occur in this calendar! For more details, see this calendar on the website.</p>
                         <div class="link">
                             <a href="https://chron0s.herokuapp.com">Go into website!</a>
@@ -456,9 +470,16 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
                         margin-top: 40px;
                         color: green;
                     }
-                    .text-calendarTitle{
+                    .text-calendarTitle {
                         text-align: center;
                         margin-bottom: 20px;
+                    }
+                    .text-calendarTitle span:first-child{
+                        margin-right: 10px;
+                        opacity: 0.3;
+                        font-size: 20px;
+                    }
+                    .text-calendarTitle span:last-child{
                         text-transform: uppercase;
                         color: green;
                         font-size: 30px;
@@ -483,7 +504,7 @@ function sendRemindByReminder(sendEventArray, eventTitle, calendarTitle) {
                 </div>
                 <div>
                     <h2>Reminder notification</h2>
-                    <p class="text-calendarTitle">${calendarTitle}</p>
+                    <p class="text-calendarTitle"><span>calendar</span><span>${calendarTitle}</span></p>
                     <p class="text-content">We remind you that you should have done an event - <span class="text-eventTitle">${eventTitle}</span>. For more details, see this calendar on the website.</p>
                         <div class="link">
                             <a href="https://chron0s.herokuapp.com">Go into website!</a>
