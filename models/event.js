@@ -81,7 +81,7 @@ const changeDateToUTC = (utc, executionDate) => {
         tempDate.setHours(tempDate.getHours() - hoursUtc );
         tempDate.setMinutes(tempDate.getMinutes() - minutesUtc);
     }
-
+    
     return tempDate.toISOString().replace('T', ' ').replace('Z', '');
 }
 
@@ -93,18 +93,15 @@ const sortingEventsByDate = (events) => {
 }
 
 const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitle, calendarId, ownerId, checkRework, oldEvent) => {
-    console.log(count, usersArray, arrangement_id, event, calendarTitle, calendarId, ownerId);
     if(usersArray.length !== 0) {
         database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id =?', [+usersArray[count], calendarId], (err, result) => {
             if(err) {
-                console.log(err);
                 return res.status(400).json( {comment: 'Not found'});
             }
             else {
                 if(result.length !== 0 || +result[0].user_id === +ownerId) {
                     database.query('INSERT INTO invitations SET ?', {arrangement_id: arrangement_id, user_id: +usersArray[count]}, (err, result) => {
                         if (err) {
-                            console.log(err);
                             return res.status(400).json( {comment: 'Not found'});
                         }
                         else {
@@ -115,7 +112,6 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                                 database.query('SELECT users.email FROM invitations LEFT OUTER JOIN users ON invitations.user_id = users.id' +
                                     ` WHERE invitations.arrangement_id = ?`, arrangement_id, (err, result) => {
                                     if(err) {
-                                        console.log(err);
                                         return res.status(400).json( {comment: 'Not found'});
                                     }
                                     else {
@@ -123,7 +119,6 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                                         for(let i = 0; i < result.length; i++) {
                                             emailArray.push(result[i].email);
                                         }
-                                        console.log(emailArray);
                                         if(!checkRework) {
                                             if(emailArray.length !== 0) {
                                                 createEventNtfc(emailArray, calendarTitle, event.type);
@@ -166,11 +161,10 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
     if(usersArray.length !== 0) {
         database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [+usersArray[count], calendarId], (err, result) => {
             if(err) {
-                console.log(err);
                 return res.status(400).json( {comment: 'Not found'});
             }
             else {
-                if(result.length !== 0 || +result[0].user_id === +ownerId) {
+                if(result.length !== 0 || +usersArray[count] === +ownerId) {
                     database.query('INSERT INTO invitations SET ?', {arrangement_id: arrangement_id, user_id: +usersArray[count]}, (err, result) => {
                         if (err) { 
                             return res.status(400).json( {comment: 'Not found'});
@@ -181,12 +175,10 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
                             }
                             else if(count + 1 === usersArray.length) {
                                 if(mailSubscribersToInviteArr.length !== 0) {
-                                    console.log(1);
                                     console.log(mailSubscribersToInviteArr);
                                     createEventNtfc(mailSubscribersToInviteArr, calendarTitle, newEvent.type);
                                 }
                                 if(mailSubscribersToDeleteArr.length !== 0) {
-                                    console.log(2);
                                     console.log(mailSubscribersToDeleteArr);
                                     deleteEventNtfc(mailSubscribersToDeleteArr, calendarTitle, newEvent.title, newEvent.type);
                                 }
@@ -194,7 +186,6 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
                                     (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                     oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
                                     if(mailSubscribersStayHere.length !== 0) {
-                                        console.log(3);
                                         console.log(mailSubscribersStayHere);
                                         changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent);
                                     }
@@ -213,12 +204,10 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
     }
     else {
         if(mailSubscribersToInviteArr.length !== 0) {
-            console.log(1);
             console.log(mailSubscribersToInviteArr);
             createEventNtfc(mailSubscribersToInviteArr, calendarTitle, newEvent.type);
         }
         if(mailSubscribersToDeleteArr.length !== 0) {
-            console.log(2);
             console.log(mailSubscribersToDeleteArr);
             deleteEventNtfc(mailSubscribersToDeleteArr, calendarTitle, newEvent.title, newEvent.type);
         }
@@ -226,7 +215,6 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
             (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
             oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
             if(mailSubscribersStayHere.length !== 0) {
-                console.log(3);
                 console.log(mailSubscribersStayHere);
                 changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent);
             }
@@ -299,16 +287,16 @@ module.exports = class Event {
                                             return res.status(400).json( {comment: 'Not found'}); 
                                         }
                                         else {
-                                            let tempResult = result.slice(0);
+                                            let subsedArrangements = result.slice(0);
                                             database.query('SELECT events.id, users.login, events.title, events.description, events.execution_date, events.type,' +
                                                 ' events.category, events.duration, events.color FROM events LEFT OUTER JOIN users ON events.user_id = users.id' +
-                                                ' WHERE calendar_id = ? AND (type = "reminder" OR type = "task")' + filteringEvents(req, 'events.'), calendarId, (err, result) => {
+                                                ' WHERE calendar_id = ? AND ((type = "reminder" OR type = "task") OR (type = "arrangement" AND events.user_id = ?))' + filteringEvents(req, 'events.'), [calendarId, userId], (err, result) => {
                                                 if(err) {
                                                     return res.status(400).json( {comment: 'Not found'}); 
                                                 }
                                                 else {
                                                     let endResult = [];
-                                                    return res.status(200).json(sortingEventsByDate(endResult.concat(tempResult, result)));
+                                                    return res.status(200).json(sortingEventsByDate(endResult.concat(subsedArrangements, result)));
                                                 }
                                             })
                                         }
@@ -478,7 +466,6 @@ module.exports = class Event {
         if(event.execution_date !== undefined) {
             event.execution_date = changeDateToUTC(utc, this.execution_date);
         }
-
         database.query('SELECT user_id, title, users.email AS email FROM calendars LEFT OUTER JOIN users ON calendars.user_id = users.id' +
             ' WHERE calendars.id = ?', calendarId, (err, result) => {
             if(err) {
@@ -496,7 +483,6 @@ module.exports = class Event {
                         else {
                             if(result.length !== 0) {
                                 ///////////////////////////////////////////////
-
                                 let oldEventTitle = result[0].title;
                                 let oldEventDescription = result[0].description;
                                 let oldEventExecutionDate = result[0].execution_date;
@@ -945,7 +931,7 @@ module.exports = class Event {
                                                                             newEvent.duration = result[0].duration;
                                                                             newEvent.type = result[0].type;
                                                                             newEvent.category = result[0].category;
-            
+        
                                                                             if(oldEvent.title !== newEvent.title || oldEvent.description !== newEvent.description ||
                                                                                 (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                                 oldEvent.type !== newEvent.type  || oldEvent.category !== newEvent.category) {
