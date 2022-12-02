@@ -99,7 +99,7 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                 return res.status(400).json( {comment: 'Not found'});
             }
             else {
-                if(result.length !== 0 || +usersArray[count] === +ownerId) {
+                if(result.length !== 0 || +result[0].user_id === +ownerId) {
                     database.query('INSERT INTO invitations SET ?', {arrangement_id: arrangement_id, user_id: +usersArray[count]}, (err, result) => {
                         if (err) {
                             return res.status(400).json( {comment: 'Not found'});
