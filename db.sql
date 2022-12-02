@@ -1,4 +1,4 @@
-USE heroku_58afbdcbb5cf3b1;
+USE heroku_aa89489bbad515a;
 
 DROP TABLE IF EXISTS tokens;
 DROP TABLE IF EXISTS invitations;
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(60) NOT NULL,
     picture VARCHAR(255) DEFAULT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS calendars (

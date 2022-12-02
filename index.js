@@ -15,7 +15,7 @@ const app = express();
 
 const cors = require('cors');
 const corsOptions ={
-    origin: ['http://192.168.20.251:3000', 'http://localhost:3000', 'https://chron0s.herokuapp.com'],
+    origin: ['http://192.168.20.251:3000', 'http://localhost:3000', 'https://chron0s-front.herokuapp.com'],
     credentials:true,
     methods:["GET" , "POST" , "PUT", "PATCH", "DELETE"],
     optionSuccessStatus:200
