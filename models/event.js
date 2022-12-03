@@ -92,7 +92,7 @@ const sortingEventsByDate = (events) => {
     return result;
 }
 
-const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitle, calendarId, ownerId, checkRework, oldEvent) => {
+const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitle, calendarId, ownerId, checkRework, oldEvent, utc) => {
     if(usersArray.length !== 0) {
         database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id =?', [+usersArray[count], calendarId], (err, result) => {
             if(err) {
@@ -106,7 +106,7 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                         }
                         else {
                             if(count + 1 < usersArray.length) {
-                                inviteUsers(count + 1, usersArray, arrangement_id, res, event, calendarTitle, calendarId, ownerId, checkRework, oldEvent);    
+                                inviteUsers(count + 1, usersArray, arrangement_id, res, event, calendarTitle, calendarId, ownerId, checkRework, oldEvent, utc);    
                             }
                             else if(count + 1 === usersArray.length) {
                                 database.query('SELECT users.email FROM invitations LEFT OUTER JOIN users ON invitations.user_id = users.id' +
@@ -128,7 +128,7 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
                                         }
                                         else {
                                             if(emailArray.length !== 0) {
-                                                changeEventNtfc(emailArray, calendarTitle, oldEvent, event);
+                                                changeEventNtfc(emailArray, calendarTitle, oldEvent, event, utc);
                                             }
                                             changeRemindFunction(arrangement_id, event.execution_date.toISOString().replace(' ', 'T'), event.type)
                                             return res.status(201).json( {comment: 'Event succesfully changed!'});
@@ -157,7 +157,7 @@ const inviteUsers = (count, usersArray, arrangement_id, res, event, calendarTitl
     }
 }
 
-const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, usersArray, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent) => {
+const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, usersArray, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc) => {
     if(usersArray.length !== 0) {
         database.query('SELECT * FROM users_calendars WHERE user_id = ? AND calendar_id = ?', [+usersArray[count], calendarId], (err, result) => {
             if(err) {
@@ -171,7 +171,7 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
                         }
                         else {
                             if(count + 1 < usersArray.length) {
-                                remakeInvitationsByArrangement(count + 1, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, usersArray, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent);    
+                                remakeInvitationsByArrangement(count + 1, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, usersArray, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc);    
                             }
                             else if(count + 1 === usersArray.length) {
                                 if(mailSubscribersToInviteArr.length !== 0) {
@@ -187,7 +187,7 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
                                     oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
                                     if(mailSubscribersStayHere.length !== 0) {
                                         console.log(mailSubscribersStayHere);
-                                        changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent);
+                                        changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent, utc);
                                     }
                                     changeRemindFunction(arrangement_id, newEvent.execution_date, newEvent.type);
                                 }
@@ -216,7 +216,7 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
             oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
             if(mailSubscribersStayHere.length !== 0) {
                 console.log(mailSubscribersStayHere);
-                changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent);
+                changeEventNtfc(mailSubscribersStayHere, calendarTitle, oldEvent, newEvent, utc);
             }
             changeRemindFunction(arrangement_id, newEvent.execution_date, newEvent.type);
         }
@@ -224,7 +224,7 @@ const remakeInvitationsByArrangement = (count, mailSubscribersToInviteArr, mailS
     }
 }
 
-const changeInvitations = (mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent) => {
+const changeInvitations = (mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc) => {
     console.log('Invite arr:')
     console.log(mailSubscribersToInviteArr);
     console.log('Delete arr:');
@@ -234,7 +234,7 @@ const changeInvitations = (mailSubscribersToInviteArr, mailSubscribersToDeleteAr
             return res.status(400).json( {comment: 'Not found'});
         }
         else {
-            return remakeInvitationsByArrangement(0, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent)
+            return remakeInvitationsByArrangement(0, mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, arrangement_id, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc)
         }
     })
 }
@@ -376,7 +376,7 @@ module.exports = class Event {
                                 }
                                 else {
                                     if(subscribers.length !== 0) {
-                                        inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false);
+                                        inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, _, utc);
                                     }
                                     else {
                                         createRemindFunction(result.insertId, event.execution_date.replace(' ', 'T'), event.type);
@@ -431,7 +431,7 @@ module.exports = class Event {
                                             }
                                             else {
                                                 if(subscribers.length !== 0) {
-                                                    inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false);
+                                                    inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, _, utc);
                                                 }
                                                 else {
                                                     createRemindFunction(result.insertId, event.execution_date.replace(' ', 'T'), event.type);
@@ -608,7 +608,7 @@ module.exports = class Event {
                                                                                 }
                                                                             }
                         
-                                                                            return changeInvitations(mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, eventId, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent);
+                                                                            return changeInvitations(mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, eventId, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc);
                                                                         }
                                                                     })
 
@@ -644,7 +644,7 @@ module.exports = class Event {
                                                                                         (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                                         oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category ) {
                                                                                         if(emailArray.length !== 0) {
-                                                                                            changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                                            changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent, utc);
                                                                                         }
                                                                                         changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                                     }
@@ -659,7 +659,7 @@ module.exports = class Event {
                                                         }
                                                         else if(oldEventType !== 'arrangement' && (event.type && event.type === 'arrangement')) {
                                                             console.log('yeah, from task/reminder to arrangement');
-                                                            return inviteUsers(0, newSubscribersArr, eventId, res, newEvent, calendarTitle, calendarId, ownerId, true, oldEvent);
+                                                            return inviteUsers(0, newSubscribersArr, eventId, res, newEvent, calendarTitle, calendarId, ownerId, true, oldEvent, utc);
                                                         }
                                                     }
                                                 })
@@ -702,7 +702,7 @@ module.exports = class Event {
                                                                     (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                     oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category) {
                                                                     if(emailArray.length !== 0) {
-                                                                        changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                        changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent, utc);
                                                                     }
                                                                     changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                 }
@@ -842,7 +842,7 @@ module.exports = class Event {
                                                                                             }
                                                                                         }
                                     
-                                                                                        return changeInvitations(mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, eventId, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent);
+                                                                                        return changeInvitations(mailSubscribersToInviteArr, mailSubscribersToDeleteArr, mailSubscribersStayHere, newSubscribersArr, eventId, res, calendarTitle, calendarId, ownerId, newEvent, oldEvent, utc);
                                                                                     }
                                                                                 })
             
@@ -878,7 +878,7 @@ module.exports = class Event {
                                                                                                 if(oldEvent.title !== newEvent.title || oldEvent.description !== newEvent.description ||
                                                                                                     (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                                                     oldEvent.type !== newEvent.type || oldEvent.category !== newEvent.category) {
-                                                                                                    changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                                                    changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent, utc);
                                                                                                     changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                                                 }
                                                                                                 
@@ -892,7 +892,7 @@ module.exports = class Event {
                                                                     }
                                                                     else if(oldEventType !== 'arrangement' && (event.type && event.type === 'arrangement')) {
                                                                         console.log('yeah, from task/reminder to arrangement');
-                                                                        return inviteUsers(0, newSubscribersArr, eventId, res, newEvent, calendarTitle, calendarId, ownerId, true, oldEvent);
+                                                                        return inviteUsers(0, newSubscribersArr, eventId, res, newEvent, calendarTitle, calendarId, ownerId, true, oldEvent, utc);
                                                                     }
                                                                 }
                                                             })
@@ -935,7 +935,7 @@ module.exports = class Event {
                                                                             if(oldEvent.title !== newEvent.title || oldEvent.description !== newEvent.description ||
                                                                                 (oldEvent.execution_date - newEvent.execution_date) !== 0 || oldEvent.duration !== newEvent.duration ||
                                                                                 oldEvent.type !== newEvent.type  || oldEvent.category !== newEvent.category) {
-                                                                                changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent);
+                                                                                changeEventNtfc(emailArray, calendarTitle, oldEvent, newEvent, utc);
                                                                                 changeRemindFunction(eventId, result[0].execution_date, result[0].type);
                                                                             }
                                                                             

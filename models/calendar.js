@@ -169,7 +169,7 @@ module.exports = class Calendar {
                                 return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                if(result.length === 0  || result[0].role === 'user') {
+                                if(result.length === 0) {
                                     return res.status(403).json(); 
                                 }
                                 else {
@@ -224,7 +224,7 @@ module.exports = class Calendar {
                                 return res.status(400).json( {comment: 'Not found'}); 
                             }
                             else {
-                                if(result.length === 0  || result[0].role === 'user') {
+                                if(result.length === 0) {
                                     return res.status(403).json(); 
                                 }
                                 else {

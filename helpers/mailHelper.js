@@ -647,7 +647,9 @@ function createEventNtfc(sendEventArray, calendarTitle, eventType) {
     mailer(message);
 }
 
-function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //.toISOString().replace('T', ' ').replace('Z', '')
+function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent, utc) { //.toISOString().replace('T', ' ').replace('Z', '')
+    let dateToUTC0 = new Date(newEvent.execution_date);
+    dateToUTC0.setHours(dateToUTC0.getHours() - utc);
     const message = {
         from: 'mostlycloudy220@gmail.com',
         to: `${sendEventArray}`,
@@ -810,7 +812,7 @@ function changeEventNtfc(sendEventArray, calendarTitle, oldEvent, newEvent) { //
                 <p class="text-calendarTitle"><span class="title">calendar</span><span class="content">${calendarTitle}</span></p>
                 <p class="text-content">The new look of this event:</p>
                 <div class="one-event">
-                    <p class="date">${newEvent.execution_date.toISOString().replace('T', ' ').replace('Z', '').slice(0, 16)}</p>
+                    <p class="date">${dateToUTC0.toISOString().replace('T', ' ').replace('Z', '').slice(0, 16)} (UTC +0)</p>
                     <p class="type">${newEvent.type}</p>
                     <p class="title">${newEvent.title}</p> 
                     <p class="desc">${newEvent.description}</p>
