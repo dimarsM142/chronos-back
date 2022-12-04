@@ -376,7 +376,7 @@ module.exports = class Event {
                                 }
                                 else {
                                     if(subscribers.length !== 0) {
-                                        inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, _, utc);
+                                        inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, [], utc);
                                     }
                                     else {
                                         createRemindFunction(result.insertId, event.execution_date.replace(' ', 'T'), event.type);
@@ -431,7 +431,7 @@ module.exports = class Event {
                                             }
                                             else {
                                                 if(subscribers.length !== 0) {
-                                                    inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, _, utc);
+                                                    inviteUsers(0, subscribers, result.insertId, res, event, calendarTitle, calendarId, ownerId, false, [], utc);
                                                 }
                                                 else {
                                                     createRemindFunction(result.insertId, event.execution_date.replace(' ', 'T'), event.type);
